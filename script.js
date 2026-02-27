@@ -1,84 +1,50 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+// Substitua o 'SUA_URL' e 'SUA_CHAVE' pelas que você tem salvas no seu bloco de notas
+const supabaseUrl = 'https://sj8130491-web.supabase.co'; // Exemplo da sua URL
+const supabaseKey = 'SUA_CHAVE_ANON_AQUI'; // Cole aqui a sua chave anon public
+const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCcUswgeytDfSEmOphQU6fLUGBMwP1aFWM",
-  authDomain: "delivery-chapeco.firebaseapp.com",
-  projectId: "delivery-chapeco",
-  storageBucket: "delivery-chapeco.firebasestorage.app",
-  messagingSenderId: "936059632111",
-  appId: "1:936059632111:web:ab4e8d6dd0874c141f1e1a",
-  measurementId: "G-X7NWQ681DF"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 let carrinho = [];
-const taxaEntrega = 5.00;
-const meuNumero = "5549999999999"; 
 
-async function carregarCardapio() {
-    const container = document.getElementById('cardapio-container');
-    container.innerHTML = "<p>Carregando cardápio...</p>";
-    try {
-        const querySnapshot = await getDocs(collection(db, "produtos"));
-        const produtos = [];
-        querySnapshot.forEach(doc => produtos.push({ id: doc.id, ...doc.data() }));
-        renderizarProdutos(produtos);
-    } catch (e) {
-        container.innerHTML = "<p>Erro ao carregar produtos. Verifique o Modo de Teste no Firestore.</p>";
-    }
-}
-
-function renderizarProdutos(itens) {
-    const container = document.getElementById('cardapio-container');
-    if (itens.length === 0) {
-        container.innerHTML = "<p>Nenhum produto encontrado no banco.</p>";
+async function carregarProdutos() {
+    const { data, error } = await _supabase.from('produtos').select('*');
+    const container = document.getElementById('lista-produtos');
+    
+    if (error) {
+        console.error("Erro ao carregar:", error);
         return;
     }
-    container.innerHTML = itens.map(p => `
-        <div class="produto-card">
-            <div class="produto-info">
-                <h3>${p.nome}</h3>
-                <p>${p.descricao}</p>
-                <div class="preco">R$ ${parseFloat(p.preco).toFixed(2)}</div>
-                <button class="btn-add" onclick="adicionarNoCarrinho('${p.nome}', ${p.preco})">ADICIONAR +</button>
+
+    container.innerHTML = ""; 
+
+    data.forEach(produto => {
+        container.innerHTML += `
+            <div class="bg-white rounded-[2rem] p-4 shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-all active:scale-[0.98]">
+                <img src="${produto.imagem_url}" class="w-24 h-24 rounded-[1.5rem] object-cover bg-gray-100">
+                <div class="flex-1">
+                    <h3 class="font-bold text-gray-800">${produto.nome}</h3>
+                    <p class="text-xs text-gray-500 line-clamp-2 mt-1">${produto.descricao || 'Delicioso espetinho artesanal'}</p>
+                    <div class="flex items-center justify-between mt-3">
+                        <span class="text-orange-600 font-extrabold text-lg">R$ ${produto.preco.toFixed(2).replace('.', ',')}</span>
+                        <button onclick="adicionarAoCarrinho('${produto.nome}', ${produto.preco})" 
+                                class="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-md transition-all">
+                            Adicionar
+                        </button>
+                    </div>
+                </div>
             </div>
-            <img src="${p.foto}" class="produto-foto">
-        </div>
-    `).join('');
+        `;
+    });
 }
 
-window.filtrar = async function(cat) {
-    const querySnapshot = await getDocs(collection(db, "produtos"));
-    const todos = [];
-    querySnapshot.forEach(doc => todos.push({ id: doc.id, ...doc.data() }));
-    if (cat === 'Todos') renderizarProdutos(todos);
-    else renderizarProdutos(todos.filter(p => p.categoria === cat));
-}
-
-window.adicionarNoCarrinho = function(nome, preco) {
+function adicionarAoCarrinho(nome, preco) {
     carrinho.push({ nome, preco });
     atualizarCarrinho();
 }
 
-window.atualizarCarrinho = function() {
-    const lista = document.getElementById('itens-carrinho');
-    const totalTxt = document.getElementById('valor-total');
-    const entrega = document.getElementById('metodo-entrega').value;
-    lista.innerHTML = carrinho.map(i => `<p>✅ ${i.nome} - R$ ${parseFloat(i.preco).toFixed(2)}</p>`).join('');
-    let soma = carrinho.reduce((acc, i) => acc + parseFloat(i.preco), 0);
-    if (entrega === "entrega" && soma > 0) soma += taxaEntrega;
-    totalTxt.innerText = `R$ ${soma.toFixed(2)}`;
+function atualizarCarrinho() {
+    const total = carrinho.reduce((sum, item) => sum + item.preco, 0);
+    document.getElementById('cart-count').innerText = carrinho.length;
+    document.getElementById('cart-total').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
 }
 
-window.enviarWhatsApp = function() {
-    if (carrinho.length === 0) return alert("Carrinho vazio!");
-    const endereco = document.getElementById('endereco').value;
-    const total = document.getElementById('valor-total').innerText;
-    if (!endereco) return alert("Digite o endereço!");
-    let msg = `*NOVO PEDIDO*\n\n${carrinho.map(i => `• ${i.nome}`).join('\n')}\n\n*Total:* ${total}\n*Endereço:* ${endereco}`;
-    window.open(`https://wa.me/${meuNumero}?text=${encodeURIComponent(msg)}`);
-}
-
-carregarCardapio();
+carregarProdutos();
