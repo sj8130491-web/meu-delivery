@@ -1,29 +1,17 @@
-// CONFIGURAÇÃO DO SEU PROJETO
 const supabaseUrl = 'https://njxejwrdjemmrmdtenit.supabase.co'; 
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qeGVqd3JkamVtbXJtZHRlbml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTg5MTYsImV4cCI6MjA4Nzc3NDkxNn0.HlZh45ptmLnt09nclbrwFNKshiyhBaLkBfhfLz-5xB4'; 
 const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
+const SEU_WHATSAPP = "5549999999999"; // <-- COLOQUE SEU NUMERO AQUI (55 + DDD + NUMERO)
+
 let carrinho = [];
 
-// BUSCAR DADOS DA TABELA 'produto'
 async function carregarProdutos() {
-    // Note que aqui agora está 'produto' sem o S final
     const { data, error } = await _supabase.from('produto').select('*');
     const container = document.getElementById('lista-produtos');
-    
-    if (error) {
-        console.error("Erro no Supabase:", error);
-        container.innerHTML = "<p class='text-center text-red-500 font-bold'>Erro ao conectar ao banco. Verifique o RLS no Supabase.</p>";
-        return;
-    }
+    if (error) { container.innerHTML = "Erro ao carregar o banco."; return; }
 
     container.innerHTML = ""; 
-
-    if (!data || data.length === 0) {
-        container.innerHTML = "<p class='text-center text-gray-500 py-10'>Nenhum espetinho cadastrado na tabela 'produto'.</p>";
-        return;
-    }
-
     data.forEach(item => {
         container.innerHTML += `
             <div class="bg-white rounded-[2rem] p-4 shadow-sm border border-gray-100 flex items-center gap-4">
@@ -46,10 +34,62 @@ async function carregarProdutos() {
 
 function adicionarAoCarrinho(nome, preco) {
     carrinho.push({ nome, preco });
+    atualizarBarras();
+}
+
+function atualizarBarras() {
     const total = carrinho.reduce((sum, item) => sum + item.preco, 0);
     document.getElementById('cart-count').innerText = carrinho.length;
     document.getElementById('cart-total').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+    document.getElementById('modal-total').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
 }
 
-// Inicia a busca
+function abrirCarrinho() {
+    const lista = document.getElementById('itens-carrinho');
+    if(carrinho.length === 0) {
+        lista.innerHTML = "<p class='text-center text-gray-400 py-4'>Sua sacola está vazia...</p>";
+    } else {
+        lista.innerHTML = carrinho.map((item, index) => `
+            <div class="flex justify-between items-center bg-gray-50 p-4 rounded-2xl">
+                <div>
+                    <p class="font-bold text-gray-800">${item.nome}</p>
+                    <p class="text-sm text-orange-600 font-bold">R$ ${item.preco.toFixed(2).replace('.', ',')}</p>
+                </div>
+                <button onclick="removerItem(${index})" class="text-red-500 font-bold text-sm bg-red-50 p-2 px-3 rounded-lg">Remover</button>
+            </div>
+        `).join('');
+    }
+    document.getElementById('modal-carrinho').style.display = 'flex';
+}
+
+function fecharCarrinho() {
+    document.getElementById('modal-carrinho').style.display = 'none';
+}
+
+function removerItem(index) {
+    carrinho.splice(index, 1);
+    atualizarBarras();
+    abrirCarrinho();
+}
+
+function enviarWhatsApp() {
+    if (carrinho.length === 0) return alert("Adicione algum item primeiro!");
+    const endereco = document.getElementById('endereco').value;
+    const obs = document.getElementById('observacao').value;
+    if (!endereco) return alert("Por favor, digite o seu endereço!");
+
+    let mensagem = `*🍢 NOVO PEDIDO - ESPETINHO DO CHEFE*\n\n`;
+    carrinho.forEach(item => {
+        mensagem += `• *${item.nome}* - R$ ${item.preco.toFixed(2).replace('.', ',')}\n`;
+    });
+    
+    const total = carrinho.reduce((sum, item) => sum + item.preco, 0);
+    mensagem += `\n💰 *Total:* R$ ${total.toFixed(2).replace('.', ',')}`;
+    mensagem += `\n📍 *Endereço:* ${endereco}`;
+    if (obs) mensagem += `\n📝 *Obs:* ${obs}`;
+
+    const link = `https://wa.me/${SEU_WHATSAPP}?text=${encodeURIComponent(mensagem)}`;
+    window.open(link, '_blank');
+}
+
 carregarProdutos();
