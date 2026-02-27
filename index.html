@@ -15,7 +15,12 @@
     </header>
 
     <main class="max-w-xl mx-auto p-4 space-y-4">
-        <div id="lista-produtos" class="grid gap-4">Carregando cardápio...</div>
+        <button id="btn-rastreio" onclick="verStatus()" class="w-full bg-white text-orange-600 p-4 rounded-2xl shadow-md font-black text-sm border-2 border-orange-100 hidden">
+            📍 ACOMPANHAR MEU PEDIDO
+        </button>
+
+        <h2 class="font-black text-gray-800 text-xl border-l-4 border-orange-600 pl-2">CARDÁPIO</h2>
+        <div id="lista-produtos" class="grid gap-4">Carregando...</div>
     </main>
 
     <div id="carrinho-bar" class="fixed bottom-6 left-4 right-4 bg-gray-900 text-white p-4 rounded-3xl shadow-2xl flex justify-between items-center hidden z-40">
@@ -26,20 +31,16 @@
     <div id="modal-checkout" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white w-full max-w-md rounded-[2.5rem] p-8 space-y-4 max-h-[90vh] overflow-y-auto">
             <h3 class="font-black text-2xl text-gray-800 text-center uppercase">Sua Sacola</h3>
-            
-            <div id="itens-sacola" class="space-y-2 border-b pb-4 mb-4"></div>
+            <div id="itens-sacola" class="space-y-2 border-b pb-4 mb-4 text-sm"></div>
 
             <div class="space-y-3">
                 <input type="text" id="nome-cliente" placeholder="Seu Nome" class="w-full p-4 bg-gray-100 rounded-2xl outline-none border">
                 <input type="tel" id="tel-cliente" placeholder="WhatsApp (DDD + Número)" class="w-full p-4 bg-gray-100 rounded-2xl outline-none border">
-                
                 <select id="tipo-entrega" onchange="document.getElementById('end-cliente').style.display = this.value === 'Entrega' ? 'block' : 'none'" class="w-full p-4 bg-gray-100 rounded-2xl outline-none border">
                     <option value="Entrega">Vou querer Entrega</option>
                     <option value="Retirada">Vou retirar no local</option>
                 </select>
-
                 <input type="text" id="end-cliente" placeholder="Endereço Completo" class="w-full p-4 bg-gray-100 rounded-2xl outline-none border">
-                
                 <select id="pagamento" class="w-full p-4 bg-gray-100 rounded-2xl outline-none border">
                     <option value="Pix">Pagamento no Pix</option>
                     <option value="Cartão">Cartão (Maquininha)</option>
@@ -49,8 +50,16 @@
             
             <div class="flex gap-2 pt-2">
                 <button onclick="fecharModal()" class="flex-1 p-4 font-bold text-gray-400">Voltar</button>
-                <button onclick="finalizarPedido()" class="flex-1 bg-green-600 text-white p-4 rounded-2xl font-black shadow-lg uppercase text-sm">Pedir Agora</button>
+                <button onclick="finalizarPedido()" class="flex-1 bg-green-600 text-white p-4 rounded-2xl font-black shadow-lg">PEDIR AGORA</button>
             </div>
+        </div>
+    </div>
+
+    <div id="modal-status" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 text-center">
+            <p class="text-xs font-bold text-gray-400 uppercase mb-2">Status do seu espetinho:</p>
+            <div id="status-atual" class="text-orange-600 font-black text-3xl uppercase italic animate-pulse">Pendente</div>
+            <button onclick="document.getElementById('modal-status').classList.add('hidden')" class="mt-8 bg-gray-100 p-4 rounded-2xl w-full font-bold">Fechar</button>
         </div>
     </div>
 
@@ -61,86 +70,66 @@
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
         let carrinho = [];
+        let idPedidoAtivo = localStorage.getItem('ultimo_pedido_id');
+
+        if(idPedidoAtivo) document.getElementById('btn-rastreio').classList.remove('hidden');
 
         async function carregarProdutos() {
             const { data } = await _supabase.from('produto').select('*').order('nome');
             document.getElementById('lista-produtos').innerHTML = data.map(p => `
                 <div class="bg-white p-4 rounded-3xl shadow-sm flex items-center justify-between border border-gray-100">
-                    <div>
-                        <h4 class="font-bold text-gray-800">${p.nome}</h4>
-                        <p class="text-orange-600 font-black italic">R$ ${p.preco.toFixed(2)}</p>
-                    </div>
+                    <div><h4 class="font-bold text-gray-800">${p.nome}</h4><p class="text-orange-600 font-black italic">R$ ${p.preco.toFixed(2)}</p></div>
                     <div class="flex items-center gap-2">
-                         <button onclick="remover('${p.nome}')" class="bg-gray-100 text-gray-400 w-10 h-10 rounded-full font-black text-xl">-</button>
-                         <button onclick="adicionar('${p.nome}', ${p.preco})" class="bg-orange-100 text-orange-600 w-10 h-10 rounded-full font-black text-xl">+</button>
+                        <button onclick="remover('${p.nome}')" class="bg-gray-100 text-gray-400 w-10 h-10 rounded-full font-black">-</button>
+                        <button onclick="adicionar('${p.nome}', ${p.preco})" class="bg-orange-100 text-orange-600 w-10 h-10 rounded-full font-black">+</button>
                     </div>
                 </div>
             `).join('');
         }
 
-        function adicionar(nome, preco) {
-            carrinho.push({ nome, preco });
-            atualizarInterface();
-        }
-
-        function remover(nome) {
-            const index = carrinho.findLastIndex(item => item.nome === nome);
-            if (index !== -1) {
-                carrinho.splice(index, 1);
-            }
-            atualizarInterface();
-        }
+        function adicionar(nome, preco) { carrinho.push({ nome, preco }); atualizarInterface(); }
+        function remover(nome) { const i = carrinho.findLastIndex(x => x.nome === nome); if(i!==-1) carrinho.splice(i,1); atualizarInterface(); }
 
         function atualizarInterface() {
-            const total = carrinho.reduce((acc, item) => acc + item.preco, 0);
-            const barra = document.getElementById('carrinho-bar');
-            
-            if (carrinho.length > 0) {
-                barra.classList.remove('hidden');
-                document.getElementById('carrinho-total').innerText = `R$ ${total.toFixed(2)}`;
-            } else {
-                barra.classList.add('hidden');
-            }
-
-            // Atualiza a lista dentro do modal
-            const listaSacola = document.getElementById('itens-sacola');
-            listaSacola.innerHTML = carrinho.map((item, index) => `
-                <div class="flex justify-between items-center text-sm">
-                    <span class="text-gray-600 font-medium">${item.nome}</span>
-                    <button onclick="removerPorIndex(${index})" class="text-red-500 font-bold">Remover</button>
-                </div>
-            `).join('') || '<p class="text-center text-gray-400">Sua sacola está vazia</p>';
+            const total = carrinho.reduce((acc, i) => acc + i.preco, 0);
+            document.getElementById('carrinho-bar').classList.toggle('hidden', carrinho.length === 0);
+            document.getElementById('carrinho-total').innerText = `R$ ${total.toFixed(2)}`;
+            document.getElementById('itens-sacola').innerHTML = carrinho.map((item, idx) => `
+                <div class="flex justify-between"><span>${item.nome}</span><button onclick="removerPorIndex(${idx})" class="text-red-500 font-bold">X</button></div>
+            `).join('') || 'Sacola vazia';
         }
 
-        function removerPorIndex(index) {
-            carrinho.splice(index, 1);
-            atualizarInterface();
-        }
-
-        function abrirModal() { document.getElementById('modal-checkout').classList.remove('hidden'); atualizarInterface(); }
+        function removerPorIndex(idx) { carrinho.splice(idx, 1); atualizarInterface(); }
+        function abrirModal() { document.getElementById('modal-checkout').classList.remove('hidden'); }
         function fecharModal() { document.getElementById('modal-checkout').classList.add('hidden'); }
 
         async function finalizarPedido() {
             const nome = document.getElementById('nome-cliente').value;
             const tel = document.getElementById('tel-cliente').value;
             const entrega = document.getElementById('tipo-entrega').value;
-            const end = (entrega === 'Retirada') ? 'RETIRADA NO LOCAL' : document.getElementById('end-cliente').value;
+            const end = (entrega === 'Retirada') ? 'RETIRADA' : document.getElementById('end-cliente').value;
             const pag = document.getElementById('pagamento').value;
-            const total = carrinho.reduce((acc, item) => acc + item.preco, 0);
-            const itensTxt = carrinho.map(i => i.nome).join(', ');
+            const total = carrinho.reduce((acc, i) => acc + i.preco, 0);
+            const itens = carrinho.map(i => i.nome).join(', ');
 
-            if (carrinho.length === 0) return alert("Sua sacola está vazia!");
-            if (!nome || !tel) return alert("Preencha Nome e Telefone!");
+            if(!nome || !tel) return alert("Preencha Nome e Telefone!");
 
-            await _supabase.from('pedidos').insert([{
-                cliente: nome, whatsapp: tel, endereco: end,
-                itens: itensTxt, total: total,
-                tipo_entrega: entrega, forma_pagamento: pag
-            }]);
+            const { data } = await _supabase.from('pedidos').insert([{
+                cliente: nome, whatsapp: tel, endereco: end, itens: itens, total: total,
+                tipo_entrega: entrega, forma_pagamento: pag, status: '🥘 Pendente'
+            }]).select();
 
-            const msg = `*NOVO PEDIDO!*%0A%0A*Cliente:* ${nome}%0A*Opção:* ${entrega}%0A*Pagamento:* ${pag}%0A*Itens:* ${itensTxt}%0A*Total:* R$ ${total.toFixed(2)}`;
-            const meuZap = "5511999999999"; // <--- COLOQUE SEU ZAP AQUI
-            window.location.href = `https://wa.me/${meuZap}?text=${msg}`;
+            if(data) {
+                localStorage.setItem('ultimo_pedido_id', data[0].id);
+                const msg = `*NOVO PEDIDO!*%0A%0A*Cliente:* ${nome}%0A*Opção:* ${entrega}%0A*Pagamento:* ${pag}%0A*Itens:* ${itens}%0A*Total:* R$ ${total.toFixed(2)}`;
+                window.location.href = `https://wa.me/5511999999999?text=${msg}`; // COLOQUE SEU ZAP AQUI
+            }
+        }
+
+        async function verStatus() {
+            const { data } = await _supabase.from('pedidos').select('status').eq('id', idPedidoAtivo).single();
+            document.getElementById('status-atual').innerText = data.status;
+            document.getElementById('modal-status').classList.remove('hidden');
         }
 
         carregarProdutos();
