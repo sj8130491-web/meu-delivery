@@ -3,69 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Espetinho do Chefe</title>
+    <title>Espetinho do Chefe | Gourmet</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Inter', sans-serif; }</style>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8f9fa; }
+        .product-card { transition: all 0.2s ease-in-out; }
+        .product-card:active { transform: scale(0.96); }
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
+    </style>
 </head>
-<body class="bg-gray-50 pb-32">
+<body class="pb-40">
 
-    <header class="bg-orange-600 p-8 text-center text-white shadow-xl">
-        <h1 class="font-black text-3xl italic tracking-tighter uppercase">Espetinho do Chefe</h1>
+    <header class="relative h-56 flex items-center justify-center overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=2069&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover brightness-[0.4]" alt="Churrasco">
+        <div class="relative text-center p-4">
+            <h1 class="text-white text-4xl font-black italic tracking-tighter uppercase">Espetinho <span class="text-orange-500">do Chefe</span></h1>
+            <p class="text-white/70 text-[10px] font-bold tracking-[0.3em] uppercase mt-1">O autêntico sabor da brasa</p>
+        </div>
     </header>
 
-    <main class="max-w-xl mx-auto p-4 space-y-4">
-        <button id="btn-rastreio" onclick="verStatus()" class="w-full bg-white text-orange-600 p-4 rounded-2xl shadow-md font-black text-sm border-2 border-orange-100 hidden">
-            📍 ACOMPANHAR MEU PEDIDO
+    <main class="max-w-xl mx-auto p-6 -mt-8 relative z-10">
+        
+        <button id="btn-rastreio" onclick="verStatus()" class="w-full glass text-orange-600 p-4 rounded-3xl shadow-xl font-black text-xs mb-6 hidden flex items-center justify-center gap-2">
+           <span class="animate-ping w-2 h-2 bg-orange-500 rounded-full"></span> 📍 ACOMPANHAR MEU PEDIDO
         </button>
 
-        <h2 class="font-black text-gray-800 text-xl border-l-4 border-orange-600 pl-2 uppercase">Cardápio</h2>
-        <div id="lista-produtos" class="grid gap-4">Carregando...</div>
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-black text-gray-800 italic uppercase tracking-tight">Seleção de Hoje</h2>
+            <div class="flex items-center gap-1 bg-green-100 px-3 py-1 rounded-full">
+                <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                <span class="text-green-700 text-[10px] font-black uppercase">Aberto</span>
+            </div>
+        </div>
+
+        <div id="lista-produtos" class="grid gap-4">Carregando cardápio...</div>
     </main>
 
-    <a href="https://wa.me/5511999999999?text=Olá! Gostaria de tirar uma dúvida." target="_blank" class="fixed bottom-28 right-4 bg-green-500 text-white p-4 rounded-full shadow-2xl z-50 flex items-center justify-center hover:scale-110 transition-transform">
-        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
-        </svg>
+    <a href="https://wa.me/5511999999999?text=Olá! Gostaria de tirar uma dúvida." target="_blank" class="fixed bottom-32 right-6 bg-green-500 text-white p-4 rounded-2xl shadow-2xl z-50 flex items-center justify-center hover:scale-110 transition-transform">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg>
     </a>
 
-    <div id="carrinho-bar" class="fixed bottom-6 left-4 right-4 bg-gray-900 text-white p-4 rounded-3xl shadow-2xl flex justify-between items-center hidden z-40">
-        <div><p id="carrinho-total" class="text-xl font-black italic text-orange-400">R$ 0,00</p></div>
-        <button onclick="abrirModal()" class="bg-orange-600 px-6 py-3 rounded-2xl font-black uppercase text-sm italic">Ver Sacola</button>
+    <div id="carrinho-bar" class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-gray-900/95 backdrop-blur-lg text-white p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center hidden z-40 border border-white/10">
+        <div>
+            <p class="text-[9px] text-gray-400 font-black uppercase tracking-widest">Total do pedido</p>
+            <p id="carrinho-total" class="text-2xl font-black italic text-orange-500">R$ 0,00</p>
+        </div>
+        <button onclick="abrirModal()" class="bg-orange-600 px-8 py-3 rounded-2xl font-black uppercase text-xs italic shadow-lg shadow-orange-600/20 active:scale-95 transition-transform">Ver Sacola</button>
     </div>
 
-    <div id="modal-checkout" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-md rounded-[2.5rem] p-8 space-y-4 max-h-[90vh] overflow-y-auto">
-            <h3 class="font-black text-2xl text-gray-800 text-center uppercase italic">Sua Sacola</h3>
-            <div id="itens-sacola" class="space-y-2 border-b pb-4 mb-4 text-sm font-medium"></div>
+    <div id="modal-checkout" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-[3rem] p-8 space-y-6 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="text-center">
+                <h3 class="font-black text-2xl text-gray-800 italic uppercase">Minha Sacola</h3>
+                <p class="text-gray-400 text-xs font-bold uppercase tracking-widest mt-1">Confira seus itens</p>
+            </div>
+            
+            <div id="itens-sacola" class="space-y-2 border-b border-gray-100 pb-4"></div>
 
             <div class="space-y-3">
-                <input type="text" id="nome-cliente" placeholder="Seu Nome" class="w-full p-4 bg-gray-100 rounded-2xl outline-none border">
-                <input type="tel" id="tel-cliente" placeholder="WhatsApp (DDD + Número)" class="w-full p-4 bg-gray-100 rounded-2xl outline-none border">
-                <select id="tipo-entrega" onchange="document.getElementById('end-cliente').style.display = this.value === 'Entrega' ? 'block' : 'none'" class="w-full p-4 bg-gray-100 rounded-2xl outline-none border">
-                    <option value="Entrega">Vou querer Entrega</option>
-                    <option value="Retirada">Vou retirar no local</option>
+                <input type="text" id="nome-cliente" placeholder="Qual seu nome?" class="w-full p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 ring-orange-500 transition-all border-none">
+                <input type="tel" id="tel-cliente" placeholder="WhatsApp (DDD + Número)" class="w-full p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 ring-orange-500 transition-all border-none">
+                
+                <select id="tipo-entrega" onchange="document.getElementById('end-cliente').style.display = this.value === 'Entrega' ? 'block' : 'none'" class="w-full p-4 bg-gray-50 rounded-2xl outline-none border-none font-bold text-gray-600">
+                    <option value="Entrega">🛵 Quero Entrega</option>
+                    <option value="Retirada">🏪 Vou retirar no local</option>
                 </select>
-                <input type="text" id="end-cliente" placeholder="Endereço Completo" class="w-full p-4 bg-gray-100 rounded-2xl outline-none border">
-                <select id="pagamento" class="w-full p-4 bg-gray-100 rounded-2xl outline-none border">
-                    <option value="Pix">Pagamento no Pix</option>
-                    <option value="Cartão">Cartão (Maquininha)</option>
-                    <option value="Dinheiro">Dinheiro</option>
+
+                <input type="text" id="end-cliente" placeholder="Endereço Completo" class="w-full p-4 bg-gray-50 rounded-2xl outline-none focus:ring-2 ring-orange-500 transition-all border-none">
+                
+                <select id="pagamento" class="w-full p-4 bg-gray-50 rounded-2xl outline-none border-none font-bold text-gray-600">
+                    <option value="Pix">💎 Pagar no Pix</option>
+                    <option value="Cartão">💳 Maquininha (Cartão)</option>
+                    <option value="Dinheiro">💵 Dinheiro</option>
                 </select>
             </div>
             
-            <div class="flex gap-2 pt-2">
-                <button onclick="fecharModal()" class="flex-1 p-4 font-bold text-gray-400">Voltar</button>
-                <button onclick="finalizarPedido()" class="flex-1 bg-green-600 text-white p-4 rounded-2xl font-black shadow-lg uppercase">Pedir Agora</button>
+            <div class="flex flex-col gap-2 pt-2">
+                <button onclick="finalizarPedido()" class="w-full bg-green-600 text-white p-5 rounded-2xl font-black shadow-xl shadow-green-600/20 uppercase tracking-tighter italic">Confirmar e Enviar Pedido</button>
+                <button onclick="fecharModal()" class="w-full p-2 font-black text-gray-400 uppercase text-[10px] tracking-widest">Voltar ao Cardápio</button>
             </div>
         </div>
     </div>
 
     <div id="modal-status" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 text-center shadow-2xl">
-            <p class="text-xs font-bold text-gray-400 uppercase mb-2 italic">O seu pedido está:</p>
+        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-10 text-center">
+            <p class="text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest">Status do Pedido:</p>
             <div id="status-atual" class="text-orange-600 font-black text-3xl uppercase italic animate-pulse">Pendente</div>
-            <button onclick="document.getElementById('modal-status').classList.add('hidden')" class="mt-8 bg-gray-100 p-4 rounded-2xl w-full font-bold text-gray-600">Fechar Janela</button>
+            <button onclick="document.getElementById('modal-status').classList.add('hidden')" class="mt-8 bg-gray-100 p-4 rounded-2xl w-full font-black text-gray-500 uppercase text-xs">Fechar</button>
         </div>
     </div>
 
@@ -83,34 +108,37 @@
         async function carregarProdutos() {
             const { data } = await _supabase.from('produto').select('*').order('nome');
             document.getElementById('lista-produtos').innerHTML = data.map(p => `
-                <div class="bg-white p-4 rounded-3xl shadow-sm flex items-center justify-between border border-gray-100">
-                    <div><h4 class="font-bold text-gray-800 text-sm">${p.nome}</h4><p class="text-orange-600 font-black italic">R$ ${p.preco.toFixed(2)}</p></div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="remover('${p.nome}')" class="bg-gray-100 text-gray-400 w-10 h-10 rounded-full font-black text-xl">-</button>
-                        <button onclick="adicionar('${p.nome}', ${p.preco})" class="bg-orange-100 text-orange-600 w-10 h-10 rounded-full font-black text-xl">+</button>
+                <div class="product-card bg-white p-4 rounded-[2rem] shadow-sm border border-gray-100 flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bg-orange-50 rounded-2xl flex items-center justify-center overflow-hidden">
+                             <img src="${p.imagem || 'https://cdn-icons-png.flaticon.com/512/706/706164.png'}" class="w-10 opacity-50">
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-800 text-sm">${p.nome}</h4>
+                            <p class="text-orange-600 font-black italic text-lg">R$ ${p.preco.toFixed(2)}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 bg-gray-50 p-1.5 rounded-2xl">
+                        <button onclick="remover('${p.nome}')" class="w-8 h-8 flex items-center justify-center font-black text-gray-400">-</button>
+                        <button onclick="adicionar('${p.nome}', ${p.preco})" class="bg-gray-900 text-white w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl shadow-lg">+</button>
                     </div>
                 </div>
             `).join('');
         }
 
         function adicionar(nome, preco) { carrinho.push({ nome, preco }); atualizarInterface(); }
-        
-        function remover(nome) { 
-            const i = carrinho.findLastIndex(x => x.nome === nome); 
-            if(i !== -1) carrinho.splice(i, 1); 
-            atualizarInterface(); 
-        }
+        function remover(nome) { const i = carrinho.findLastIndex(x => x.nome === nome); if(i !== -1) carrinho.splice(i, 1); atualizarInterface(); }
 
         function atualizarInterface() {
             const total = carrinho.reduce((acc, i) => acc + i.preco, 0);
             document.getElementById('carrinho-bar').classList.toggle('hidden', carrinho.length === 0);
             document.getElementById('carrinho-total').innerText = `R$ ${total.toFixed(2)}`;
             document.getElementById('itens-sacola').innerHTML = carrinho.map((item, idx) => `
-                <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg mb-1">
-                    <span>${item.nome}</span>
-                    <button onclick="removerPorIndex(${idx})" class="text-red-500 font-bold px-2">Remover</button>
+                <div class="flex justify-between items-center bg-gray-50 p-3 rounded-2xl mb-2 text-sm">
+                    <span class="font-bold text-gray-700">${item.nome}</span>
+                    <button onclick="removerPorIndex(${idx})" class="text-red-500 font-black text-[10px] uppercase bg-white px-3 py-1 rounded-full shadow-sm">Remover</button>
                 </div>
-            `).join('') || 'Sacola vazia';
+            `).join('') || '<p class="text-center text-gray-400 py-4 font-bold">Sacola vazia</p>';
         }
 
         function removerPorIndex(idx) { carrinho.splice(idx, 1); atualizarInterface(); }
@@ -126,17 +154,17 @@
             const total = carrinho.reduce((acc, i) => acc + i.preco, 0);
             const itens = carrinho.map(i => i.nome).join(', ');
 
-            if(!nome || !tel) return alert("Por favor, preencha Nome e Telefone!");
+            if(!nome || !tel) return alert("Ei! Esquecemos seu nome ou WhatsApp.");
 
-            const { data, error } = await _supabase.from('pedidos').insert([{
+            const { data } = await _supabase.from('pedidos').insert([{
                 cliente: nome, whatsapp: tel, endereco: end, itens: itens, total: total,
                 tipo_entrega: entrega, forma_pagamento: pag, status: '🥘 Pendente'
             }]).select();
 
             if(data) {
                 localStorage.setItem('ultimo_pedido_id', data[0].id);
-                const msg = `*NOVO PEDIDO!*%0A%0A*Cliente:* ${nome}%0A*WhatsApp:* ${tel}%0A*Opção:* ${entrega}%0A*Pagamento:* ${pag}%0A*Itens:* ${itens}%0A*Total:* R$ ${total.toFixed(2)}`;
-                window.location.href = `https://wa.me/49988821776?text=${msg}`; // TROQUE PELO SEU NÚMERO
+                const msg = `*UAU! NOVO PEDIDO!*%0A%0A*Cliente:* ${nome}%0A*Opção:* ${entrega}%0A*Pagamento:* ${pag}%0A*Itens:* ${itens}%0A%0A*Total:* R$ ${total.toFixed(2)}`;
+                window.location.href = `https://wa.me/49988821776?text=${msg}`;
             }
         }
 
