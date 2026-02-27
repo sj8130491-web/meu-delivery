@@ -2,18 +2,14 @@ const supabaseUrl = 'https://njxejwrdjemmrmdtenit.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qeGVqd3JkamVtbXJtZHRlbml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTg5MTYsImV4cCI6MjA4Nzc3NDkxNn0.HlZh45ptmLnt09nclbrwFNKshiyhBaLkBfhfLz-5xB4'; 
 const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-const SEU_WHATSAPP = "5549999999999"; // <-- COLOQUE SEU NÚMERO AQUI
+const SEU_WHATSAPP = "49988821776"; // <-- COLOQUE SEU NÚMERO AQUI
 
 let carrinho = [];
 
 async function carregarProdutos() {
     const { data, error } = await _supabase.from('produto').select('*');
     const container = document.getElementById('lista-produtos');
-    
-    if (error) { 
-        container.innerHTML = "Erro ao carregar o banco."; 
-        return; 
-    }
+    if (error) { container.innerHTML = "Erro ao carregar cardápio."; return; }
 
     container.innerHTML = ""; 
     data.forEach(item => {
@@ -77,47 +73,36 @@ function removerItem(index) {
     abrirCarrinho();
 }
 
-// FUNÇÃO ATUALIZADA COM HISTÓRICO DE VENDAS
 async function enviarWhatsApp() {
-    if (carrinho.length === 0) return alert("Adicione algum item primeiro!");
+    if (carrinho.length === 0) return alert("Sua sacola está vazia!");
     
+    const nomeCliente = document.getElementById('nome-cliente').value;
     const endereco = document.getElementById('endereco').value;
     const obs = document.getElementById('observacao').value;
 
-    if (!endereco) return alert("Por favor, digite o seu endereço!");
-
-    const nomeCliente = prompt("Qual o seu nome?");
-    if (!nomeCliente) return alert("Precisamos do seu nome para registrar o pedido.");
+    if (!nomeCliente || !endereco) return alert("Por favor, preencha nome e endereço!");
 
     const total = carrinho.reduce((sum, item) => sum + item.preco, 0);
-    const listaItensNomes = carrinho.map(i => i.nome).join(', ');
+    const listaItens = carrinho.map(i => i.nome).join(', ');
 
-    // 1. SALVAR NO BANCO DE DADOS (PARA O SEU BALANÇO)
+    // SALVAR NO HISTÓRICO (Supabase)
     const { error } = await _supabase.from('pedidos').insert([
-        { 
-            cliente: nomeCliente, 
-            total: total, 
-            itens: listaItensNomes, 
-            endereco: endereco 
-        }
+        { cliente: nomeCliente, total: total, itens: listaItens, endereco: endereco }
     ]);
 
-    if (error) console.error("Erro ao salvar no histórico:", error);
+    if (error) console.error("Erro ao salvar pedido no banco:", error);
 
-    // 2. ENVIAR PARA O WHATSAPP
+    // MENSAGEM WHATSAPP
     let mensagem = `*🍢 NOVO PEDIDO - ESPETINHO DO CHEFE*\n\n`;
     mensagem += `👤 *Cliente:* ${nomeCliente}\n\n`;
-    
     carrinho.forEach(item => {
         mensagem += `• *${item.nome}* - R$ ${item.preco.toFixed(2).replace('.', ',')}\n`;
     });
-    
     mensagem += `\n💰 *Total:* R$ ${total.toFixed(2).replace('.', ',')}`;
     mensagem += `\n📍 *Endereço:* ${endereco}`;
     if (obs) mensagem += `\n📝 *Obs:* ${obs}`;
 
-    const link = `https://wa.me/${SEU_WHATSAPP}?text=${encodeURIComponent(mensagem)}`;
-    window.open(link, '_blank');
+    window.open(`https://wa.me/${SEU_WHATSAPP}?text=${encodeURIComponent(mensagem)}`, '_blank');
 }
 
 carregarProdutos();
