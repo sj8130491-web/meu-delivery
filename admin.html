@@ -3,80 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Admin - Entrega Chapecó</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <style>
-        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f4; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .produto-item { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; }
-        .btn-excluir { background: #dc3545; width: auto; padding: 5px; font-size: 12px; }
-    </style>
+    <title>Painel Admin - Espetinho</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-100 p-4 pb-10">
 
-<div class="container">
-    <h2>Novo Espetinho</h2>
-    <input type="text" id="nome" placeholder="Nome do produto">
-    <input type="number" id="preco" placeholder="Preço (ex: 10.00)">
-    <input type="text" id="imagem" placeholder="Nome da imagem (ex: carne.jpg)">
-    <button onclick="addProduto()">Salvar no Banco</button>
+    <div class="max-w-4xl mx-auto">
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-black text-gray-800">📊 Balanço do Dia</h1>
+            <button onclick="window.location.reload()" class="bg-white p-2 rounded-lg shadow-sm text-sm font-bold">Atualizar</button>
+        </header>
 
-    <hr>
-    <div id="lista-admin">Carregando produtos...</div>
-</div>
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <div class="bg-orange-500 text-white p-6 rounded-[2rem] shadow-lg">
+                <p class="text-xs font-bold uppercase opacity-80">Total Vendido</p>
+                <h2 id="faturamento-total" class="text-3xl font-black">R$ 0,00</h2>
+            </div>
+            <div class="bg-white p-6 rounded-[2rem] shadow-md">
+                <p class="text-xs font-bold text-gray-400 uppercase">Pedidos Hoje</p>
+                <h2 id="qtd-pedidos" class="text-3xl font-black text-gray-800">0</h2>
+            </div>
+        </div>
 
-<script>
-    // Configurações do seu projeto
-    const supabaseUrl = 'https://njxejwrdjemmrmdtenit.supabase.co';
-    const supabaseKey = 'sb_publishable_dqU8fGBMpzd1yDuHmfb0Hw_8XGFc3tg';
-    const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        <div class="bg-white rounded-[2rem] p-6 shadow-md">
+            <h3 class="font-bold text-lg mb-4">Últimas Vendas</h3>
+            <div id="lista-pedidos" class="space-y-4">
+                <p class="text-gray-400">Carregando histórico...</p>
+            </div>
+        </div>
 
-    // FUNÇÃO PARA SALVAR (Usando 'produto')
-    async function addProduto() {
-        const nome = document.getElementById('nome').value;
-        const preco = document.getElementById('preco').value;
-        const imagem = document.getElementById('imagem').value;
+        <div class="mt-8 text-center">
+            <a href="index.html" class="text-orange-600 font-bold">← Voltar para o Cardápio</a>
+        </div>
+    </div>
 
-        const { error } = await _supabase
-            .from('produto') 
-            .insert([{ nome, preco: parseFloat(preco), imagem }]);
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabaseUrl = 'https://njxejwrdjemmrmdtenit.supabase.co'; 
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qeGVqd3JkamVtbXJtZHRlbml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTg5MTYsImV4cCI6MjA4Nzc3NDkxNn0.HlZh45ptmLnt09nclbrwFNKshiyhBaLkBfhfLz-5xB4'; 
+        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        if (error) {
-            alert("Erro: " + error.message);
-        } else {
-            alert("Sucesso!");
-            location.reload();
+        async function carregarDashboard() {
+            const { data, error } = await _supabase
+                .from('pedidos')
+                .select('*')
+                .order('id', { ascending: false }); // Mostra os mais recentes primeiro
+
+            if (error) return alert("Erro ao carregar dados!");
+
+            let totalDinheiro = 0;
+            const container = document.getElementById('lista-pedidos');
+            container.innerHTML = "";
+
+            data.forEach(pedido => {
+                totalDinheiro += pedido.total;
+                
+                // Formata a data
+                const dataFormatada = new Date(pedido.data).toLocaleString('pt-BR');
+
+                container.innerHTML += `
+                    <div class="border-b pb-4 last:border-0">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="font-bold text-gray-800">${pedido.cliente}</p>
+                                <p class="text-xs text-gray-500">${dataFormatada}</p>
+                                <p class="text-sm mt-1 text-gray-600 italic">${pedido.itens}</p>
+                            </div>
+                            <span class="font-black text-orange-600">R$ ${pedido.total.toFixed(2).replace('.', ',')}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('faturamento-total').innerText = `R$ ${totalDinheiro.toFixed(2).replace('.', ',')}`;
+            document.getElementById('qtd-pedidos').innerText = data.length;
         }
-    }
 
-    // FUNÇÃO PARA MOSTRAR LISTA
-    async function renderLista() {
-        const { data: itens } = await _supabase.from('produto').select('*');
-        const lista = document.getElementById('lista-admin');
-        
-        if (itens) {
-            lista.innerHTML = '<h3>Lista:</h3>' + itens.map(p => `
-                <div class="produto-item">
-                    <span>${p.nome} - R$ ${p.preco}</span>
-                    <button class="btn-excluir" onclick="remover(${p.id})">X</button>
-                </div>
-            `).join('');
-        }
-    }
-
-    // FUNÇÃO PARA EXCLUIR
-    async function remover(id) {
-        if(confirm("Apagar item?")) {
-            await _supabase.from('produto').delete().eq('id', id);
-            renderLista();
-        }
-    }
-
-    window.onload = renderLista;
-</script>
+        carregarDashboard();
+    </script>
 </body>
 </html>
