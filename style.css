@@ -1,0 +1,43 @@
+:root { --cor-principal: #cf2a2a; --cor-sucesso: #27ae60; }
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+body { background: #f4f4f4; padding-bottom: 380px; }
+
+#btn-admin { 
+    position: fixed; top: 10px; right: 10px; width: auto; 
+    background: #333; color: white; border: none; padding: 5px 10px; 
+    border-radius: 5px; z-index: 100; font-size: 12px; cursor: pointer;
+}
+
+header { background: white; text-align: center; padding: 15px; border-bottom: 1px solid #ddd; }
+.logo { max-height: 40px; }
+
+.categorias-nav { 
+    display: flex; gap: 10px; padding: 10px; background: white; 
+    overflow-x: auto; position: sticky; top: 0; z-index: 10;
+}
+.categorias-nav button { 
+    background: #eee; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer;
+}
+
+#cardapio-container { padding: 15px; }
+.produto-card { 
+    background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.produto-info h3 { font-size: 1rem; margin-bottom: 4px; }
+.produto-info p { font-size: 0.8rem; color: #777; margin-bottom: 8px; }
+.preco { color: var(--cor-sucesso); font-weight: bold; }
+.produto-foto { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; margin-left: 10px; }
+
+.btn-add { background: var(--cor-principal); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+
+#carrinho { 
+    position: fixed; bottom: 0; width: 100%; background: white; 
+    padding: 15px; border-radius: 20px 20px 0 0; box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+}
+.input-text { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ddd; border-radius: 5px; }
+.total-area { display: flex; justify-content: space-between; padding: 10px 0; font-size: 1.2rem; }
+.botoes-acao { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+#btn-imprimir { background: #555; color: white; border: none; border-radius: 5px; cursor: pointer; }
+#btn-whatsapp { background: var(--cor-sucesso); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; padding: 12px; }

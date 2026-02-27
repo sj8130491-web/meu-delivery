@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cardápio Profissional - Chapecó</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --cor-principal: #e44d26; --cor-sucesso: #28a745; --cor-fundo: #f4f4f4; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--cor-fundo); padding-bottom: 90px; }
+        
+        /* Topo */
+        header { background: var(--cor-principal); color: white; text-align: center; padding: 25px; border-radius: 0 0 25px 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        
+        .container { max-width: 600px; margin: auto; padding: 15px; }
+
+        /* Cards Modernos */
+        .vitrine { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: relative; }
+        .card img { width: 100%; height: 130px; object-fit: cover; }
+        .card-body { padding: 10px; }
+        .card-body h3 { margin: 5px 0; font-size: 0.95rem; color: #333; }
+        .preco { color: var(--cor-sucesso); font-weight: bold; font-size: 1.1rem; display: block; margin-bottom: 8px; }
+        
+        .btn-add { width: 100%; background: var(--cor-principal); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-add:active { transform: scale(0.95); }
+
+        /* Barra do Carrinho Fixa */
+        .barra-fixa { position: fixed; bottom: 0; width: 100%; background: white; padding: 15px; border-top: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.1); z-index: 999; box-sizing: border-box; }
+        .btn-ver-carrinho { background: var(--cor-sucesso); color: white; border: none; padding: 12px 20px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+
+        /* Modal do Carrinho (Oculto) */
+        #modal-carrinho { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; }
+        .modal-corpo { background: white; width: 95%; max-width: 450px; margin: 20px auto; padding: 20px; border-radius: 20px; max-height: 85vh; overflow-y: auto; }
+        
+        .item-selecionado { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding: 10px 0; }
+        .btn-remover { color: #dc3545; border: none; background: none; font-size: 1.2rem; cursor: pointer; }
+
+        /* Campos do Cliente */
+        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 14px; }
+        .total-destaque { font-size: 1.3rem; color: #333; text-align: center; margin: 15px 0; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Espetinhos Chapecó</h1>
+    <p>Escolha seus favoritos 🍢</p>
+</header>
+
+<div class="container">
+    <div class="vitrine" id="lista-produtos">
+        </div>
+</div>
+
+<div class="barra-fixa">
+    <div>
+        <span id="qtd-itens">0 itens</span><br>
+        <strong id="valor-subtotal">R$ 0,00</strong>
+    </div>
+    <button class="btn-ver-carrinho" onclick="toggleCarrinho(true)">Finalizar Pedido</button>
+</div>
+
+<div id="modal-carrinho">
+    <div class="modal-corpo">
+        <h2>Seu Pedido</h2>
+        <div id="itens-no-carrinho"></div>
+        
+        <p style="text-align: right;">Taxa de Entrega: <strong>R$ 5,00</strong></p>
+        <div class="total-destaque" id="total-geral">Total: R$ 5,00</div>
+
+        <hr>
+        <h3>Dados para Entrega</h3>
+        <input type="text" id="nome-cliente" placeholder="Seu Nome">
+        <input type="text" id="endereco-cliente" placeholder="Rua, Número e Bairro">
+        <textarea id="obs-cliente" placeholder="Alguma observação? (Ex: Tirar cebola, ponto da carne...)"></textarea>
+
+        <button class="btn-add" style="background: var(--cor-sucesso); margin-top: 15px;" onclick="enviarWhatsApp()">Pedir pelo WhatsApp</button>
+        <button class="btn-add" style="background: #eee; color: #333; margin-top: 10px;" onclick="toggleCarrinho(false)">Voltar ao Cardápio</button>
+    </div>
+</div>
+
+<script>
+    // CONEXÃO COM O SEU BANCO
+    const supabaseUrl = 'https://njxejwrdjemmrmdtenit.supabase.co';
+    const supabaseKey = 'sb_publishable_dqU8fGBMpzd1yDuHmfb0Hw_8XGFc3tg';
+    const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    let carrinho = [];
+    const taxaEntrega = 5.00;
+
+    // BUSCAR PRODUTOS
+    async function carregarCardapio() {
+        const { data: produtos } = await _supabase.from('produto').select('*');
+        const vitrine = document.getElementById('lista-produtos');
+        
+        vitrine.innerHTML = produtos.map(p => `
+            <div class="card">
+                <img src="${p.imagem}" onerror="this.src='https://via.placeholder.com/200x130?text=Espetinho'">
+                <div class="card-body">
+                    <h3>${p.nome}</h3>
+                    <span class="preco">R$ ${p.preco.toFixed(2)}</span>
+                    <button class="btn-add" onclick="adicionar('${p.nome}', ${p.preco})">Adicionar</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function adicionar(nome, preco) {
+        carrinho.push({ nome, preco });
+        atualizarInterface();
+    }
+
+    function remover(index) {
+        carrinho.splice(index, 1);
+        atualizarInterface();
+        renderizarItensCarrinho();
+    }
+
+    function atualizarInterface() {
+        const subtotal = carrinho.reduce((total, item) => total + item.preco, 0);
+        document.getElementById('qtd-itens').innerText = `${carrinho.length} itens`;
+        document.getElementById('valor-subtotal').innerText = `R$ ${subtotal.toFixed(2)}`;
+        document.getElementById('total-geral').innerText = `Total: R$ ${(subtotal + taxaEntrega).toFixed(2)}`;
+    }
+
+    function toggleCarrinho(mostrar) {
+        document.getElementById('modal-carrinho').style.display = mostrar ? 'block' : 'none';
+        if(mostrar) renderizarItensCarrinho();
+    }
+
+    function renderizarItensCarrinho() {
+        const divItens = document.getElementById('itens-no-carrinho');
+        if(carrinho.length === 0) {
+            divItens.innerHTML = "<p>Seu carrinho está vazio.</p>";
+            return;
+        }
+        divItens.innerHTML = carrinho.map((item, index) => `
+            <div class="item-selecionado">
+                <span>${item.nome}</span>
+                <span>R$ ${item.preco.toFixed(2)} <button class="btn-remover" onclick="remover(${index})">🗑️</button></span>
+            </div>
+        `).join('');
+    }
+
+    function enviarWhatsApp() {
+        const nome = document.getElementById('nome-cliente').value;
+        const endereco = document.getElementById('endereco-cliente').value;
+        const obs = document.getElementById('obs-cliente').value;
+        
+        if(!nome || !endereco) return alert("Por favor, preencha seu nome e endereço!");
+        if(carrinho.length === 0) return alert("Adicione produtos antes de finalizar!");
+
+        let mensagem = `*Novo Pedido - Espetinhos*%0A%0A`;
+        mensagem += `*Cliente:* ${nome}%0A`;
+        mensagem += `*Endereço:* ${endereco}%0A%0A`;
+        mensagem += `*Itens:*%0A`;
+        
+        carrinho.forEach(item => {
+            mensagem += `- ${item.nome}: R$ ${item.preco.toFixed(2)}%0A`;
+        });
+
+        mensagem += `%0A*Obs:* ${obs || 'Nenhuma'}%0A`;
+        mensagem += `%0A*Total c/ entrega:* ${document.getElementById('total-geral').innerText}`;
+
+        // TROQUE PELO SEU NÚMERO ABAIXO
+        window.open(`https://wa.me/49988821776?text=${mensagem}`, '_blank');
+    }
+
+    window.onload = carregarCardapio;
+</script>
+
+</body>
+</html>

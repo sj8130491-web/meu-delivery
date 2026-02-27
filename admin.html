@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Admin - Entrega Chapecó</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f4; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 10px; margin: 5px 0 15px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .produto-item { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; justify-content: space-between; }
+        .btn-excluir { background: #dc3545; width: auto; padding: 5px; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Novo Espetinho</h2>
+    <input type="text" id="nome" placeholder="Nome do produto">
+    <input type="number" id="preco" placeholder="Preço (ex: 10.00)">
+    <input type="text" id="imagem" placeholder="Nome da imagem (ex: carne.jpg)">
+    <button onclick="addProduto()">Salvar no Banco</button>
+
+    <hr>
+    <div id="lista-admin">Carregando produtos...</div>
+</div>
+
+<script>
+    // Configurações do seu projeto
+    const supabaseUrl = 'https://njxejwrdjemmrmdtenit.supabase.co';
+    const supabaseKey = 'sb_publishable_dqU8fGBMpzd1yDuHmfb0Hw_8XGFc3tg';
+    const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // FUNÇÃO PARA SALVAR (Usando 'produto')
+    async function addProduto() {
+        const nome = document.getElementById('nome').value;
+        const preco = document.getElementById('preco').value;
+        const imagem = document.getElementById('imagem').value;
+
+        const { error } = await _supabase
+            .from('produto') 
+            .insert([{ nome, preco: parseFloat(preco), imagem }]);
+
+        if (error) {
+            alert("Erro: " + error.message);
+        } else {
+            alert("Sucesso!");
+            location.reload();
+        }
+    }
+
+    // FUNÇÃO PARA MOSTRAR LISTA
+    async function renderLista() {
+        const { data: itens } = await _supabase.from('produto').select('*');
+        const lista = document.getElementById('lista-admin');
+        
+        if (itens) {
+            lista.innerHTML = '<h3>Lista:</h3>' + itens.map(p => `
+                <div class="produto-item">
+                    <span>${p.nome} - R$ ${p.preco}</span>
+                    <button class="btn-excluir" onclick="remover(${p.id})">X</button>
+                </div>
+            `).join('');
+        }
+    }
+
+    // FUNÇÃO PARA EXCLUIR
+    async function remover(id) {
+        if(confirm("Apagar item?")) {
+            await _supabase.from('produto').delete().eq('id', id);
+            renderLista();
+        }
+    }
+
+    window.onload = renderLista;
+</script>
+</body>
+</html>
