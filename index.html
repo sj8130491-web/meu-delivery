@@ -19,13 +19,16 @@
     </main>
 
     <div id="carrinho-bar" class="fixed bottom-6 left-4 right-4 bg-gray-900 text-white p-4 rounded-3xl shadow-2xl flex justify-between items-center hidden z-40">
-        <div><p id="carrinho-total" class="text-xl font-black italic">R$ 0,00</p></div>
-        <button onclick="abrirModal()" class="bg-orange-600 px-6 py-3 rounded-2xl font-black uppercase text-sm italic">Finalizar</button>
+        <div><p id="carrinho-total" class="text-xl font-black italic text-orange-400">R$ 0,00</p></div>
+        <button onclick="abrirModal()" class="bg-orange-600 px-6 py-3 rounded-2xl font-black uppercase text-sm italic">Ver Sacola</button>
     </div>
 
     <div id="modal-checkout" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white w-full max-w-md rounded-[2.5rem] p-8 space-y-4">
-            <h3 class="font-black text-2xl text-gray-800 text-center uppercase">Fechar Pedido</h3>
+        <div class="bg-white w-full max-w-md rounded-[2.5rem] p-8 space-y-4 max-h-[90vh] overflow-y-auto">
+            <h3 class="font-black text-2xl text-gray-800 text-center uppercase">Sua Sacola</h3>
+            
+            <div id="itens-sacola" class="space-y-2 border-b pb-4 mb-4"></div>
+
             <div class="space-y-3">
                 <input type="text" id="nome-cliente" placeholder="Seu Nome" class="w-full p-4 bg-gray-100 rounded-2xl outline-none border">
                 <input type="tel" id="tel-cliente" placeholder="WhatsApp (DDD + Número)" class="w-full p-4 bg-gray-100 rounded-2xl outline-none border">
@@ -43,9 +46,10 @@
                     <option value="Dinheiro">Dinheiro</option>
                 </select>
             </div>
+            
             <div class="flex gap-2 pt-2">
                 <button onclick="fecharModal()" class="flex-1 p-4 font-bold text-gray-400">Voltar</button>
-                <button onclick="finalizarPedido()" class="flex-1 bg-green-600 text-white p-4 rounded-2xl font-black shadow-lg">PEDIR AGORA</button>
+                <button onclick="finalizarPedido()" class="flex-1 bg-green-600 text-white p-4 rounded-2xl font-black shadow-lg uppercase text-sm">Pedir Agora</button>
             </div>
         </div>
     </div>
@@ -62,20 +66,58 @@
             const { data } = await _supabase.from('produto').select('*').order('nome');
             document.getElementById('lista-produtos').innerHTML = data.map(p => `
                 <div class="bg-white p-4 rounded-3xl shadow-sm flex items-center justify-between border border-gray-100">
-                    <div><h4 class="font-bold text-gray-800">${p.nome}</h4><p class="text-orange-600 font-black italic">R$ ${p.preco.toFixed(2)}</p></div>
-                    <button onclick="adicionar('${p.nome}', ${p.preco})" class="bg-orange-100 text-orange-600 w-10 h-10 rounded-full font-black text-xl">+</button>
+                    <div>
+                        <h4 class="font-bold text-gray-800">${p.nome}</h4>
+                        <p class="text-orange-600 font-black italic">R$ ${p.preco.toFixed(2)}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                         <button onclick="remover('${p.nome}')" class="bg-gray-100 text-gray-400 w-10 h-10 rounded-full font-black text-xl">-</button>
+                         <button onclick="adicionar('${p.nome}', ${p.preco})" class="bg-orange-100 text-orange-600 w-10 h-10 rounded-full font-black text-xl">+</button>
+                    </div>
                 </div>
             `).join('');
         }
 
         function adicionar(nome, preco) {
             carrinho.push({ nome, preco });
-            const total = carrinho.reduce((acc, item) => acc + item.preco, 0);
-            document.getElementById('carrinho-bar').classList.remove('hidden');
-            document.getElementById('carrinho-total').innerText = `R$ ${total.toFixed(2)}`;
+            atualizarInterface();
         }
 
-        function abrirModal() { document.getElementById('modal-checkout').classList.remove('hidden'); }
+        function remover(nome) {
+            const index = carrinho.findLastIndex(item => item.nome === nome);
+            if (index !== -1) {
+                carrinho.splice(index, 1);
+            }
+            atualizarInterface();
+        }
+
+        function atualizarInterface() {
+            const total = carrinho.reduce((acc, item) => acc + item.preco, 0);
+            const barra = document.getElementById('carrinho-bar');
+            
+            if (carrinho.length > 0) {
+                barra.classList.remove('hidden');
+                document.getElementById('carrinho-total').innerText = `R$ ${total.toFixed(2)}`;
+            } else {
+                barra.classList.add('hidden');
+            }
+
+            // Atualiza a lista dentro do modal
+            const listaSacola = document.getElementById('itens-sacola');
+            listaSacola.innerHTML = carrinho.map((item, index) => `
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-gray-600 font-medium">${item.nome}</span>
+                    <button onclick="removerPorIndex(${index})" class="text-red-500 font-bold">Remover</button>
+                </div>
+            `).join('') || '<p class="text-center text-gray-400">Sua sacola está vazia</p>';
+        }
+
+        function removerPorIndex(index) {
+            carrinho.splice(index, 1);
+            atualizarInterface();
+        }
+
+        function abrirModal() { document.getElementById('modal-checkout').classList.remove('hidden'); atualizarInterface(); }
         function fecharModal() { document.getElementById('modal-checkout').classList.add('hidden'); }
 
         async function finalizarPedido() {
@@ -87,7 +129,8 @@
             const total = carrinho.reduce((acc, item) => acc + item.preco, 0);
             const itensTxt = carrinho.map(i => i.nome).join(', ');
 
-            if(!nome || !tel) return alert("Preencha Nome e Telefone!");
+            if (carrinho.length === 0) return alert("Sua sacola está vazia!");
+            if (!nome || !tel) return alert("Preencha Nome e Telefone!");
 
             await _supabase.from('pedidos').insert([{
                 cliente: nome, whatsapp: tel, endereco: end,
@@ -96,9 +139,10 @@
             }]);
 
             const msg = `*NOVO PEDIDO!*%0A%0A*Cliente:* ${nome}%0A*Opção:* ${entrega}%0A*Pagamento:* ${pag}%0A*Itens:* ${itensTxt}%0A*Total:* R$ ${total.toFixed(2)}`;
-            const meuZap = "5511999999999"; // COLOQUE SEU ZAP AQUI
+            const meuZap = "5511999999999"; // <--- COLOQUE SEU ZAP AQUI
             window.location.href = `https://wa.me/${meuZap}?text=${msg}`;
         }
+
         carregarProdutos();
     </script>
 </body>
