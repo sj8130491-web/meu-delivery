@@ -2,7 +2,7 @@ const supabaseUrl = 'https://njxejwrdjemmrmdtenit.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qeGVqd3JkamVtbXJtZHRlbml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTg5MTYsImV4cCI6MjA4Nzc3NDkxNn0.HlZh45ptmLnt09nclbrwFNKshiyhBaLkBfhfLz-5xB4'; 
 const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-const SEU_WHATSAPP = "5549999999999"; // <-- COLOQUE SEU NUMERO AQUI (55 + DDD + NUMERO)
+const SEU_WHATSAPP = "49988821776"; // <-- COLOQUE SEU NUMERO AQUI (55 + DDD + NUMERO)
 
 let carrinho = [];
 
