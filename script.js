@@ -1,36 +1,33 @@
-// CONFIGURAÇÃO DO SEU BANCO DE DADOS (Chaves configuradas)
-const supabaseUrl = 'https://sj8130491-web.supabase.co'; 
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqODEzMDQ5MSIsImV4cCI6MTc0MDY3MTMwNSwiaWF0IjoxNzQwNjcxMzA1LCJyb2xlIjoiYW5vbiIsImF1ZCI6ImFub24ifQ.3_eL-I-lH_k3XmY-fGf_kL-I-lH_k3XmY-fGf_kL-I-lH_k3XmY-fGf'; 
+// CONFIGURAÇÃO ATUALIZADA (Chave e Link novos)
+const supabaseUrl = 'https://njxejwrdjemmrmdtenit.supabase.co'; 
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qeGVqd3JkamVtbXJtZHRlbml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTg5MTYsImV4cCI6MjA4Nzc3NDkxNn0.HlZh45ptmLnt09nclbrwFNKshiyhBaLkBfhfLz-5xB4'; 
 const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 let carrinho = [];
 
-// FUNÇÃO PARA BUSCAR PRODUTOS NO BANCO E EXIBIR COM VISUAL MODERNO
 async function carregarProdutos() {
     const { data, error } = await _supabase.from('produtos').select('*');
     const container = document.getElementById('lista-produtos');
     
     if (error) {
-        console.error("Erro ao carregar:", error);
-        container.innerHTML = "<p class='text-center text-red-500 font-bold'>Erro ao carregar o cardápio.</p>";
+        console.error("Erro:", error);
+        container.innerHTML = "<p class='text-center text-red-500'>Erro ao conectar ao banco. Verifique a tabela 'produtos'.</p>";
         return;
     }
 
-    // Limpa o texto "Preparando a brasa..."
     container.innerHTML = ""; 
 
-    // Desenha cada produto na tela com o novo estilo
     data.forEach(produto => {
         container.innerHTML += `
-            <div class="bg-white rounded-[2rem] p-4 shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-all active:scale-[0.98]">
-                <img src="${produto.imagem_url}" class="w-24 h-24 rounded-[1.5rem] object-cover bg-gray-100 shadow-inner">
+            <div class="bg-white rounded-[2rem] p-4 shadow-sm border border-gray-100 flex items-center gap-4 active:scale-[0.98] transition-all">
+                <img src="${produto.imagem_url}" class="w-24 h-24 rounded-[1.5rem] object-cover bg-gray-100">
                 <div class="flex-1">
                     <h3 class="font-bold text-gray-800 text-lg">${produto.nome}</h3>
-                    <p class="text-xs text-gray-500 line-clamp-2 mt-1">${produto.descricao || 'Receita especial da casa'}</p>
+                    <p class="text-xs text-gray-500 mt-1">${produto.descricao || 'Especialidade da casa'}</p>
                     <div class="flex items-center justify-between mt-3">
-                        <span class="text-orange-600 font-extrabold text-xl">R$ ${produto.preco.toFixed(2).replace('.', ',')}</span>
+                        <span class="text-orange-600 font-extrabold text-xl font-mono">R$ ${produto.preco.toFixed(2).replace('.', ',')}</span>
                         <button onclick="adicionarAoCarrinho('${produto.nome}', ${produto.preco})" 
-                                class="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-lg shadow-orange-100 transition-all active:scale-90">
+                                class="bg-orange-500 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-lg shadow-orange-100 active:scale-90">
                             Adicionar
                         </button>
                     </div>
@@ -40,20 +37,11 @@ async function carregarProdutos() {
     });
 }
 
-// FUNÇÃO DO CARRINHO
 function adicionarAoCarrinho(nome, preco) {
     carrinho.push({ nome, preco });
-    atualizarInterfaceCarrinho();
-}
-
-function atualizarInterfaceCarrinho() {
     const total = carrinho.reduce((sum, item) => sum + item.preco, 0);
-    const contador = document.getElementById('cart-count');
-    const totalExibido = document.getElementById('cart-total');
-
-    if(contador) contador.innerText = carrinho.length;
-    if(totalExibido) totalExibido.innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+    document.getElementById('cart-count').innerText = carrinho.length;
+    document.getElementById('cart-total').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
 }
 
-// Inicia o carregamento assim que a página abre
 carregarProdutos();
