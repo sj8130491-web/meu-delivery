@@ -19,9 +19,15 @@
             📍 ACOMPANHAR MEU PEDIDO
         </button>
 
-        <h2 class="font-black text-gray-800 text-xl border-l-4 border-orange-600 pl-2">CARDÁPIO</h2>
+        <h2 class="font-black text-gray-800 text-xl border-l-4 border-orange-600 pl-2 uppercase">Cardápio</h2>
         <div id="lista-produtos" class="grid gap-4">Carregando...</div>
     </main>
+
+    <a href="https://wa.me/5511999999999?text=Olá! Gostaria de tirar uma dúvida." target="_blank" class="fixed bottom-28 right-4 bg-green-500 text-white p-4 rounded-full shadow-2xl z-50 flex items-center justify-center hover:scale-110 transition-transform">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+        </svg>
+    </a>
 
     <div id="carrinho-bar" class="fixed bottom-6 left-4 right-4 bg-gray-900 text-white p-4 rounded-3xl shadow-2xl flex justify-between items-center hidden z-40">
         <div><p id="carrinho-total" class="text-xl font-black italic text-orange-400">R$ 0,00</p></div>
@@ -30,8 +36,8 @@
 
     <div id="modal-checkout" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white w-full max-w-md rounded-[2.5rem] p-8 space-y-4 max-h-[90vh] overflow-y-auto">
-            <h3 class="font-black text-2xl text-gray-800 text-center uppercase">Sua Sacola</h3>
-            <div id="itens-sacola" class="space-y-2 border-b pb-4 mb-4 text-sm"></div>
+            <h3 class="font-black text-2xl text-gray-800 text-center uppercase italic">Sua Sacola</h3>
+            <div id="itens-sacola" class="space-y-2 border-b pb-4 mb-4 text-sm font-medium"></div>
 
             <div class="space-y-3">
                 <input type="text" id="nome-cliente" placeholder="Seu Nome" class="w-full p-4 bg-gray-100 rounded-2xl outline-none border">
@@ -50,16 +56,16 @@
             
             <div class="flex gap-2 pt-2">
                 <button onclick="fecharModal()" class="flex-1 p-4 font-bold text-gray-400">Voltar</button>
-                <button onclick="finalizarPedido()" class="flex-1 bg-green-600 text-white p-4 rounded-2xl font-black shadow-lg">PEDIR AGORA</button>
+                <button onclick="finalizarPedido()" class="flex-1 bg-green-600 text-white p-4 rounded-2xl font-black shadow-lg uppercase">Pedir Agora</button>
             </div>
         </div>
     </div>
 
     <div id="modal-status" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 text-center">
-            <p class="text-xs font-bold text-gray-400 uppercase mb-2">Status do seu espetinho:</p>
+        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 text-center shadow-2xl">
+            <p class="text-xs font-bold text-gray-400 uppercase mb-2 italic">O seu pedido está:</p>
             <div id="status-atual" class="text-orange-600 font-black text-3xl uppercase italic animate-pulse">Pendente</div>
-            <button onclick="document.getElementById('modal-status').classList.add('hidden')" class="mt-8 bg-gray-100 p-4 rounded-2xl w-full font-bold">Fechar</button>
+            <button onclick="document.getElementById('modal-status').classList.add('hidden')" class="mt-8 bg-gray-100 p-4 rounded-2xl w-full font-bold text-gray-600">Fechar Janela</button>
         </div>
     </div>
 
@@ -78,24 +84,32 @@
             const { data } = await _supabase.from('produto').select('*').order('nome');
             document.getElementById('lista-produtos').innerHTML = data.map(p => `
                 <div class="bg-white p-4 rounded-3xl shadow-sm flex items-center justify-between border border-gray-100">
-                    <div><h4 class="font-bold text-gray-800">${p.nome}</h4><p class="text-orange-600 font-black italic">R$ ${p.preco.toFixed(2)}</p></div>
+                    <div><h4 class="font-bold text-gray-800 text-sm">${p.nome}</h4><p class="text-orange-600 font-black italic">R$ ${p.preco.toFixed(2)}</p></div>
                     <div class="flex items-center gap-2">
-                        <button onclick="remover('${p.nome}')" class="bg-gray-100 text-gray-400 w-10 h-10 rounded-full font-black">-</button>
-                        <button onclick="adicionar('${p.nome}', ${p.preco})" class="bg-orange-100 text-orange-600 w-10 h-10 rounded-full font-black">+</button>
+                        <button onclick="remover('${p.nome}')" class="bg-gray-100 text-gray-400 w-10 h-10 rounded-full font-black text-xl">-</button>
+                        <button onclick="adicionar('${p.nome}', ${p.preco})" class="bg-orange-100 text-orange-600 w-10 h-10 rounded-full font-black text-xl">+</button>
                     </div>
                 </div>
             `).join('');
         }
 
         function adicionar(nome, preco) { carrinho.push({ nome, preco }); atualizarInterface(); }
-        function remover(nome) { const i = carrinho.findLastIndex(x => x.nome === nome); if(i!==-1) carrinho.splice(i,1); atualizarInterface(); }
+        
+        function remover(nome) { 
+            const i = carrinho.findLastIndex(x => x.nome === nome); 
+            if(i !== -1) carrinho.splice(i, 1); 
+            atualizarInterface(); 
+        }
 
         function atualizarInterface() {
             const total = carrinho.reduce((acc, i) => acc + i.preco, 0);
             document.getElementById('carrinho-bar').classList.toggle('hidden', carrinho.length === 0);
             document.getElementById('carrinho-total').innerText = `R$ ${total.toFixed(2)}`;
             document.getElementById('itens-sacola').innerHTML = carrinho.map((item, idx) => `
-                <div class="flex justify-between"><span>${item.nome}</span><button onclick="removerPorIndex(${idx})" class="text-red-500 font-bold">X</button></div>
+                <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg mb-1">
+                    <span>${item.nome}</span>
+                    <button onclick="removerPorIndex(${idx})" class="text-red-500 font-bold px-2">Remover</button>
+                </div>
             `).join('') || 'Sacola vazia';
         }
 
@@ -107,29 +121,32 @@
             const nome = document.getElementById('nome-cliente').value;
             const tel = document.getElementById('tel-cliente').value;
             const entrega = document.getElementById('tipo-entrega').value;
-            const end = (entrega === 'Retirada') ? 'RETIRADA' : document.getElementById('end-cliente').value;
+            const end = (entrega === 'Retirada') ? 'RETIRADA NO LOCAL' : document.getElementById('end-cliente').value;
             const pag = document.getElementById('pagamento').value;
             const total = carrinho.reduce((acc, i) => acc + i.preco, 0);
             const itens = carrinho.map(i => i.nome).join(', ');
 
-            if(!nome || !tel) return alert("Preencha Nome e Telefone!");
+            if(!nome || !tel) return alert("Por favor, preencha Nome e Telefone!");
 
-            const { data } = await _supabase.from('pedidos').insert([{
+            const { data, error } = await _supabase.from('pedidos').insert([{
                 cliente: nome, whatsapp: tel, endereco: end, itens: itens, total: total,
                 tipo_entrega: entrega, forma_pagamento: pag, status: '🥘 Pendente'
             }]).select();
 
             if(data) {
                 localStorage.setItem('ultimo_pedido_id', data[0].id);
-                const msg = `*NOVO PEDIDO!*%0A%0A*Cliente:* ${nome}%0A*Opção:* ${entrega}%0A*Pagamento:* ${pag}%0A*Itens:* ${itens}%0A*Total:* R$ ${total.toFixed(2)}`;
-                window.location.href = `https://wa.me/49988821776ext=${msg}`; // COLOQUE SEU ZAP AQUI
+                const msg = `*NOVO PEDIDO!*%0A%0A*Cliente:* ${nome}%0A*WhatsApp:* ${tel}%0A*Opção:* ${entrega}%0A*Pagamento:* ${pag}%0A*Itens:* ${itens}%0A*Total:* R$ ${total.toFixed(2)}`;
+                window.location.href = `https://wa.me/5511999999999?text=${msg}`; // TROQUE PELO SEU NÚMERO
             }
         }
 
         async function verStatus() {
-            const { data } = await _supabase.from('pedidos').select('status').eq('id', idPedidoAtivo).single();
-            document.getElementById('status-atual').innerText = data.status;
-            document.getElementById('modal-status').classList.remove('hidden');
+            const id = localStorage.getItem('ultimo_pedido_id');
+            const { data } = await _supabase.from('pedidos').select('status').eq('id', id).single();
+            if(data) {
+                document.getElementById('status-atual').innerText = data.status;
+                document.getElementById('modal-status').classList.remove('hidden');
+            }
         }
 
         carregarProdutos();
