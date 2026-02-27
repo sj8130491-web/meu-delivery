@@ -2,7 +2,7 @@ const supabaseUrl = 'https://njxejwrdjemmrmdtenit.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qeGVqd3JkamVtbXJtZHRlbml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTg5MTYsImV4cCI6MjA4Nzc3NDkxNn0.HlZh45ptmLnt09nclbrwFNKshiyhBaLkBfhfLz-5xB4'; 
 const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-const SEU_WHATSAPP = "49988821776"; // <-- LEMBRE DE COLOCAR SEU NÚMERO AQUI
+const SEU_WHATSAPP = "5549999999999"; // <-- COLOQUE SEU NÚMERO AQUI
 
 let carrinho = [];
 
@@ -17,9 +17,7 @@ async function carregarProdutos() {
 
     container.innerHTML = ""; 
     data.forEach(item => {
-        // AJUSTE AQUI: Mudamos de item.imagem_url para item.imagem
         const foto = item.imagem || 'https://via.placeholder.com/150?text=Sem+Foto';
-
         container.innerHTML += `
             <div class="bg-white rounded-[2rem] p-4 shadow-sm border border-gray-100 flex items-center gap-4">
                 <img src="${foto}" class="w-24 h-24 rounded-[1.5rem] object-cover bg-gray-50">
@@ -79,18 +77,41 @@ function removerItem(index) {
     abrirCarrinho();
 }
 
-function enviarWhatsApp() {
+// FUNÇÃO ATUALIZADA COM HISTÓRICO DE VENDAS
+async function enviarWhatsApp() {
     if (carrinho.length === 0) return alert("Adicione algum item primeiro!");
+    
     const endereco = document.getElementById('endereco').value;
     const obs = document.getElementById('observacao').value;
+
     if (!endereco) return alert("Por favor, digite o seu endereço!");
 
+    const nomeCliente = prompt("Qual o seu nome?");
+    if (!nomeCliente) return alert("Precisamos do seu nome para registrar o pedido.");
+
+    const total = carrinho.reduce((sum, item) => sum + item.preco, 0);
+    const listaItensNomes = carrinho.map(i => i.nome).join(', ');
+
+    // 1. SALVAR NO BANCO DE DADOS (PARA O SEU BALANÇO)
+    const { error } = await _supabase.from('pedidos').insert([
+        { 
+            cliente: nomeCliente, 
+            total: total, 
+            itens: listaItensNomes, 
+            endereco: endereco 
+        }
+    ]);
+
+    if (error) console.error("Erro ao salvar no histórico:", error);
+
+    // 2. ENVIAR PARA O WHATSAPP
     let mensagem = `*🍢 NOVO PEDIDO - ESPETINHO DO CHEFE*\n\n`;
+    mensagem += `👤 *Cliente:* ${nomeCliente}\n\n`;
+    
     carrinho.forEach(item => {
         mensagem += `• *${item.nome}* - R$ ${item.preco.toFixed(2).replace('.', ',')}\n`;
     });
     
-    const total = carrinho.reduce((sum, item) => sum + item.preco, 0);
     mensagem += `\n💰 *Total:* R$ ${total.toFixed(2).replace('.', ',')}`;
     mensagem += `\n📍 *Endereço:* ${endereco}`;
     if (obs) mensagem += `\n📝 *Obs:* ${obs}`;
