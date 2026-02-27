@@ -3,41 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Admin</title>
+    <title>Painel do Chefe</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>@media print { .no-print { display: none; } }</style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 pb-20">
 
-    <nav class="bg-white p-4 shadow mb-6 no-print">
-        <h1 class="text-center font-black text-orange-600 uppercase">Administração de Vendas</h1>
+    <nav class="bg-white shadow-sm p-4 sticky top-0 z-10 no-print text-center">
+        <h1 class="font-black text-xl text-orange-600 mb-3">PAINEL DO CHEFE</h1>
+        <div class="flex justify-center gap-2">
+            <button onclick="mudarAba('vendas')" class="px-6 py-2 rounded-xl font-bold bg-orange-100 text-orange-600">Vendas do Dia</button>
+            <button onclick="mudarAba('produtos')" class="px-6 py-2 rounded-xl font-bold bg-gray-100 text-gray-600">Cadastrar Produtos</button>
+        </div>
     </nav>
 
     <main class="max-w-xl mx-auto p-4 no-print">
-        <div id="lista-vendas" class="space-y-4 text-sm">Carregando histórico...</div>
+        
+        <section id="aba-vendas">
+            <div class="bg-orange-500 text-white p-6 rounded-3xl shadow-lg text-center mb-6">
+                <p class="text-xs font-bold uppercase">Total Vendido Hoje</p>
+                <h2 id="total-vendas" class="text-3xl font-black">R$ 0,00</h2>
+            </div>
+            <div id="lista-vendas" class="space-y-3">Carregando pedidos...</div>
+        </section>
+
+        <section id="aba-produtos" class="hidden space-y-4">
+            <div class="bg-white p-6 rounded-3xl shadow-md border">
+                <h3 class="font-bold mb-3">Novo Espetinho</h3>
+                <input type="text" id="p-nome" placeholder="Nome" class="w-full p-3 mb-2 border rounded-xl">
+                <input type="number" id="p-preco" placeholder="Preço" class="w-full p-3 mb-2 border rounded-xl">
+                <button onclick="salvarProduto()" class="w-full bg-orange-600 text-white font-bold p-3 rounded-xl">Salvar na Grelha</button>
+            </div>
+            <div id="lista-estoque" class="bg-white p-6 rounded-3xl shadow-md space-y-2"></div>
+        </section>
     </main>
 
-    <div id="modal-comanda" class="fixed inset-0 bg-white z-50 hidden p-6">
-        <div class="max-w-sm mx-auto border-2 border-black p-4 text-black text-xs font-mono">
-            <div class="text-center mb-2 border-b-2 border-dashed border-black pb-2">
-                <h2 class="font-bold text-lg uppercase">Espetinho do Chefe</h2>
-                <p id="com-data"></p>
-            </div>
-            <div class="mb-2 space-y-1">
+    <div id="modal-comanda" class="fixed inset-0 bg-white z-50 hidden p-6 overflow-y-auto">
+        <div class="max-w-xs mx-auto border-2 border-black p-4 text-black font-mono text-sm bg-white">
+            <div class="text-center border-b-2 border-dashed border-black pb-2 mb-2 uppercase font-bold text-lg">Espetinho do Chefe</div>
+            <p id="com-data" class="text-center text-[10px] mb-4"></p>
+            <div class="space-y-1 mb-4">
                 <p><b>CLIENTE:</b> <span id="com-cliente"></span></p>
                 <p><b>ZAP:</b> <span id="com-tel"></span></p>
                 <p><b>TIPO:</b> <span id="com-tipo"></span></p>
-                <p><b>END:</b> <span id="com-end"></span></p>
                 <p><b>PAGAMENTO:</b> <span id="com-pag"></span></p>
+                <p><b>ENDEREÇO:</b> <span id="com-end"></span></p>
             </div>
-            <div class="border-b-2 border-dashed border-black mb-2 pb-1">
-                <p><b>ITENS:</b></p>
-                <div id="com-itens"></div>
+            <div class="border-t border-dashed border-black pt-2 mb-4">
+                <b>PEDIDO:</b><br><div id="com-itens" class="pl-2"></div>
             </div>
-            <div class="text-right text-lg font-bold">TOTAL: <span id="com-total"></span></div>
-            <div class="mt-6 flex gap-2 no-print">
-                <button onclick="window.print()" class="bg-black text-white p-3 flex-1 font-bold">IMPRIMIR</button>
-                <button onclick="document.getElementById('modal-comanda').classList.add('hidden')" class="bg-gray-200 p-3 flex-1 font-bold">FECHAR</button>
+            <div class="text-right text-lg font-bold border-t-2 border-black pt-2">TOTAL: <span id="com-total"></span></div>
+            <div class="mt-8 flex gap-2 no-print">
+                <button onclick="window.print()" class="bg-black text-white p-4 flex-1 font-bold rounded-xl uppercase">Imprimir</button>
+                <button onclick="document.getElementById('modal-comanda').classList.add('hidden')" class="bg-gray-200 p-4 flex-1 font-bold rounded-xl uppercase">Fechar</button>
             </div>
         </div>
     </div>
@@ -48,27 +66,59 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qeGVqd3JkamVtbXJtZHRlbml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTg5MTYsImV4cCI6MjA4Nzc3NDkxNn0.HlZh45ptmLnt09nclbrwFNKshiyhBaLkBfhfLz-5xB4';
         const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
+        function mudarAba(aba) {
+            document.getElementById('aba-vendas').classList.toggle('hidden', aba !== 'vendas');
+            document.getElementById('aba-produtos').classList.toggle('hidden', aba !== 'produtos');
+            if(aba === 'vendas') carregarVendas(); else carregarEstoque();
+        }
+
         async function carregarVendas() {
             const { data } = await _supabase.from('pedidos').select('*').order('id', { ascending: false });
-            document.getElementById('lista-vendas').innerHTML = data.map(p => `
-                <div class="bg-white p-4 rounded-xl shadow flex justify-between items-center border-l-4 border-orange-500">
-                    <div><b>${p.cliente}</b><br><span class="text-xs text-gray-400">R$ ${p.total.toFixed(2)}</span></div>
-                    <button onclick='abrirComanda(${JSON.stringify(p)})' class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold">Comanda</button>
-                </div>
-            `).join('');
+            let totalDia = 0;
+            document.getElementById('lista-vendas').innerHTML = data.map(p => {
+                totalDia += p.total;
+                return `<div class="bg-white p-4 rounded-2xl shadow flex justify-between items-center border">
+                    <div><b>${p.cliente}</b><br><span class="text-xs text-orange-600">R$ ${p.total.toFixed(2)}</span></div>
+                    <button onclick='abrirComanda(${JSON.stringify(p)})' class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase">Comanda</button>
+                </div>`;
+            }).join('');
+            document.getElementById('total-vendas').innerText = `R$ ${totalDia.toFixed(2)}`;
         }
 
         function abrirComanda(p) {
             document.getElementById('com-cliente').innerText = p.cliente;
             document.getElementById('com-tel').innerText = p.whatsapp || '---';
             document.getElementById('com-tipo').innerText = p.tipo_entrega || 'Entrega';
-            document.getElementById('com-end').innerText = p.endereco || '---';
             document.getElementById('com-pag').innerText = p.forma_pagamento || 'A combinar';
+            document.getElementById('com-end').innerText = p.endereco || '---';
             document.getElementById('com-itens').innerText = p.itens;
             document.getElementById('com-total').innerText = `R$ ${p.total.toFixed(2)}`;
-            document.getElementById('com-data').innerText = new Date().toLocaleString();
+            document.getElementById('com-data').innerText = new Date().toLocaleString('pt-BR');
             document.getElementById('modal-comanda').classList.remove('hidden');
         }
+
+        async function carregarEstoque() {
+            const { data } = await _supabase.from('produto').select('*').order('nome');
+            document.getElementById('lista-estoque').innerHTML = data.map(p => `
+                <div class="flex justify-between items-center bg-gray-50 p-2 rounded-lg border">
+                    <span class="text-sm">${p.nome} - R$ ${p.preco.toFixed(2)}</span>
+                    <button onclick="deletarProduto(${p.id})" class="text-red-500 font-bold">X</button>
+                </div>
+            `).join('');
+        }
+
+        async function salvarProduto() {
+            const nome = document.getElementById('p-nome').value;
+            const preco = parseFloat(document.getElementById('p-preco').value);
+            if(!nome || !preco) return alert("Erro!");
+            await _supabase.from('produto').insert([{ nome, preco, imagem: '' }]);
+            location.reload();
+        }
+
+        async function deletarProduto(id) {
+            if(confirm("Apagar produto?")) { await _supabase.from('produto').delete().eq('id', id); carregarEstoque(); }
+        }
+
         carregarVendas();
     </script>
 </body>
