@@ -3,115 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Admin | Espetinho</title>
+    <title>Admin - Barber & Delivery</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>@media print { .no-print { display: none; } }</style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        body { background-color: #020617; color: white; font-family: sans-serif; }
+        .glass { background: #1e293b; border: 1px solid #334155; }
+    </style>
 </head>
-<body class="bg-gray-100 pb-20">
+<body class="p-4 sm:p-10">
 
-    <nav class="bg-white p-4 shadow-sm sticky top-0 z-10 no-print flex justify-around">
-        <button onclick="mudarAba('vendas')" class="font-black text-orange-600 uppercase border-b-2 border-orange-600 pb-1">Vendas</button>
-        <button onclick="mudarAba('produtos')" class="font-black text-gray-400 uppercase">Produtos</button>
-    </nav>
-
-    <main class="max-w-xl mx-auto p-4 no-print">
-        <section id="aba-vendas" class="space-y-4">
-            <div class="bg-gray-900 text-white p-6 rounded-[2rem] shadow-lg text-center">
-                <p class="text-[10px] uppercase font-bold opacity-50">Caixa de Hoje</p>
-                <h2 id="total-vendas" class="text-4xl font-black italic text-orange-500">R$ 0,00</h2>
+    <div class="max-w-2xl mx-auto space-y-6">
+        <header class="flex justify-between items-center bg-slate-900 p-6 rounded-[2rem] border border-slate-800">
+            <div>
+                <h1 class="text-xl font-black text-amber-500 uppercase italic">Painel <span class="text-white">Admin</span></h1>
+                <p class="text-slate-500 text-[10px] font-bold">FECHAMENTO DE CAIXA</p>
             </div>
-            <div id="lista-vendas" class="space-y-3"></div>
-        </section>
+            <input type="date" id="filtro_data" onchange="buscarDados()" class="bg-slate-800 p-2 rounded-xl text-sm border-none ring-1 ring-amber-500/30">
+        </header>
 
-        <section id="aba-produtos" class="hidden space-y-4">
-            <div class="bg-white p-6 rounded-3xl shadow-md border">
-                <input type="text" id="p-nome" placeholder="Nome" class="w-full p-4 bg-gray-50 border rounded-2xl mb-2 outline-none">
-                <input type="number" id="p-preco" placeholder="Preço" class="w-full p-4 bg-gray-50 border rounded-2xl mb-4 outline-none">
-                <button onclick="salvarProduto()" class="w-full bg-orange-600 text-white font-black p-4 rounded-2xl uppercase">Cadastrar</button>
+        <div class="grid grid-cols-2 gap-4">
+            <div class="glass p-6 rounded-[2rem] text-center border-l-4 border-l-green-500">
+                <p class="text-slate-500 text-[10px] font-bold uppercase mb-1">Caixa de Hoje</p>
+                <h2 id="total_faturamento" class="text-2xl font-black text-green-500">R$ 0,00</h2>
             </div>
-            <div id="lista-estoque" class="space-y-2"></div>
-        </section>
-    </main>
-
-    <div id="modal-comanda" class="fixed inset-0 bg-white z-50 hidden p-6 overflow-y-auto">
-        <div class="max-w-xs mx-auto border-2 border-black p-4 font-mono text-xs">
-            <h2 class="text-center font-bold text-lg border-b-2 border-dashed border-black pb-2 mb-2 uppercase">ESPETINHO DO CHEFE</h2>
-            <div id="com-header" class="mb-4"></div>
-            <p><b>CLIENTE:</b> <span id="com-cliente"></span></p>
-            <p><b>PAG:</b> <span id="com-pag"></span></p>
-            <p><b>ENTREGA:</b> <span id="com-tipo"></span></p>
-            <p><b>ITENS:</b></p>
-            <div id="com-itens" class="border-t border-dashed border-black pt-2 mb-4"></div>
-            <p class="text-right text-xl font-bold border-t-2 border-black pt-2">TOTAL: <span id="com-total"></span></p>
-            <div class="mt-10 flex gap-2 no-print">
-                <button onclick="window.print()" class="bg-black text-white p-4 flex-1 font-bold rounded-xl uppercase">Imprimir</button>
-                <button onclick="document.getElementById('modal-comanda').classList.add('hidden')" class="bg-gray-100 p-4 flex-1 font-bold rounded-xl uppercase">Fechar</button>
+            <div class="glass p-6 rounded-[2rem] text-center border-l-4 border-l-blue-500">
+                <p class="text-slate-500 text-[10px] font-bold uppercase mb-1">Atendimentos</p>
+                <h2 id="total_clientes" class="text-2xl font-black">0</h2>
             </div>
         </div>
+
+        <div class="grid grid-cols-2 gap-3">
+            <button onclick="gerarRelatorioPDF()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl text-[10px] uppercase shadow-lg transition-all">
+                📄 Baixar PDF do Dia
+            </button>
+            <button onclick="limparDiaInteiro()" class="bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white font-bold py-4 rounded-2xl text-[10px] uppercase border border-red-600/50 transition-all">
+                🗑️ Zerar Tudo Hoje
+            </button>
+        </div>
+
+        <div class="space-y-3" id="lista_resultados">
+            </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const supabaseUrl = 'https://njxejwrdjemmrmdtenit.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qeGVqd3JkamVtbXJtZHRlbml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTg5MTYsImV4cCI6MjA4Nzc3NDkxNn0.HlZh45ptmLnt09nclbrwFNKshiyhBaLkBfhfLz-5xB4';
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        // CONFIGURAÇÕES DO SUPABASE
+        const SB_URL = 'https://sehjsvlsmawphpjjekwl.supabase.co';
+        const SB_KEY = 'sb_publishable_JJ7LlwBIWko8VXWPLHb0RA_4AmFMuYK';
+        const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-        function mudarAba(aba) {
-            document.getElementById('aba-vendas').classList.toggle('hidden', aba !== 'vendas');
-            document.getElementById('aba-produtos').classList.toggle('hidden', aba !== 'produtos');
-            if(aba==='vendas') carregarVendas(); else carregarEstoque();
-        }
+        // Inicia com a data de hoje
+        const inputData = document.getElementById('filtro_data');
+        inputData.valueAsDate = new Date();
 
-        async function carregarVendas() {
-            const { data } = await _supabase.from('pedidos').select('*').order('id', {ascending: false});
-            let total = 0;
-            document.getElementById('lista-vendas').innerHTML = data.map(p => {
-                total += p.total;
-                return `
-                <div class="bg-white p-5 rounded-[1.5rem] shadow-sm border relative">
-                    <div class="absolute top-0 right-0 bg-gray-900 text-white px-3 py-1 rounded-bl-xl font-black text-[10px]">#${p.id}</div>
-                    <div class="font-bold text-gray-800">${p.cliente}</div>
-                    <div class="text-orange-600 font-black italic text-sm mb-3">R$ ${p.total.toFixed(2)} - ${p.status}</div>
-                    <div class="flex gap-1 no-print">
-                        <button onclick="mudarStatus(${p.id},'🥘 Preparando')" class="bg-gray-100 p-2 rounded text-[9px] font-bold">PREPARAR</button>
-                        <button onclick="mudarStatus(${p.id},'✅ Pronto')" class="bg-green-50 text-green-600 p-2 rounded text-[9px] font-bold">PRONTO</button>
-                        <button onclick='abrirComanda(${JSON.stringify(p)})' class="bg-black text-white p-2 rounded text-[9px] font-bold uppercase">Comanda</button>
+        async function buscarDados() {
+            const dataSel = inputData.value;
+            const lista = document.getElementById('lista_resultados');
+            
+            const { data, error } = await _supabase
+                .from('agendamento') 
+                .select('*')
+                .eq('data', dataSel)
+                .order('horario', { ascending: true });
+
+            let soma = 0;
+            document.getElementById('total_clientes').innerText = data ? data.length : 0;
+
+            if (!data || data.length === 0) {
+                lista.innerHTML = `<p class="text-center text-slate-600 py-10 italic">Nenhum registro para este dia.</p>`;
+                document.getElementById('total_faturamento').innerText = "R$ 0,00";
+                return;
+            }
+
+            lista.innerHTML = "";
+            data.forEach(item => {
+                const valor = Number(item.valor || 0);
+                soma += valor;
+
+                lista.innerHTML += `
+                    <div class="bg-slate-900 p-5 rounded-[1.5rem] border border-slate-800 flex justify-between items-center">
+                        <div>
+                            <span class="text-amber-500 font-bold text-xs">${item.horario}</span>
+                            <h3 class="font-bold">${item.cliente}</h3>
+                            <p class="text-slate-500 text-[10px] uppercase">${item.servico || 'Serviço'}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-green-500 font-black">R$ ${valor.toFixed(2)}</p>
+                            <button onclick="deletarUm(${item.id})" class="text-[9px] text-slate-600 uppercase mt-2 hover:text-red-500">Excluir</button>
+                        </div>
                     </div>
-                </div>`;
-            }).join('');
-            document.getElementById('total-vendas').innerText = `R$ ${total.toFixed(2)}`;
+                `;
+            });
+
+            document.getElementById('total_faturamento').innerText = `R$ ${soma.toFixed(2)}`;
         }
 
-        async function mudarStatus(id, st) { await _supabase.from('pedidos').update({status:st}).eq('id',id); carregarVendas(); }
+        // FUNÇÃO PARA GERAR O PDF
+        function gerarRelatorioPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const dataSel = inputData.value;
+            const total = document.getElementById('total_faturamento').innerText;
 
-        function abrirComanda(p) {
-            document.getElementById('com-header').innerHTML = `<b>PEDIDO #${p.id}</b><br>${new Date(p.created_at).toLocaleString()}`;
-            document.getElementById('com-cliente').innerText = p.cliente;
-            document.getElementById('com-pag').innerText = p.forma_pagamento;
-            document.getElementById('com-tipo').innerText = p.tipo_entrega;
-            document.getElementById('com-itens').innerText = p.itens;
-            document.getElementById('com-total').innerText = `R$ ${p.total.toFixed(2)}`;
-            document.getElementById('modal-comanda').classList.remove('hidden');
+            doc.setFontSize(20);
+            doc.text("RELATÓRIO DE VENDAS", 10, 20);
+            doc.setFontSize(12);
+            doc.text(`Data: ${dataSel}`, 10, 30);
+            doc.text(`Faturamento Total: ${total}`, 10, 40);
+            doc.text("--------------------------------------------------", 10, 50);
+
+            let y = 60;
+            document.querySelectorAll('#lista_resultados > div').forEach(el => {
+                const info = el.innerText.replace(/\s+/g, ' ').trim();
+                doc.text(info, 10, y);
+                y += 10;
+                if(y > 280) { doc.addPage(); y = 20; }
+            });
+
+            doc.save(`caixa_${dataSel}.pdf`);
         }
 
-        async function carregarEstoque() {
-            const { data } = await _supabase.from('produto').select('*').order('nome');
-            document.getElementById('lista-estoque').innerHTML = data.map(p => `
-                <div class="bg-white p-4 rounded-2xl border flex justify-between items-center text-sm">
-                    <span class="font-bold">${p.nome} - R$ ${p.preco.toFixed(2)}</span>
-                    <button onclick="deletarProduto(${p.id})" class="text-red-500 font-bold">X</button>
-                </div>`).join('');
+        // FUNÇÃO PARA ZERAR O DIA (APAGAR TUDO)
+        async function limparDiaInteiro() {
+            const dataSel = inputData.value;
+            if (confirm(`Deseja ZERAR todos os registros do dia ${dataSel}? Isso vai apagar tudo permanentemente!`)) {
+                const { error } = await _supabase.from('agendamento').delete().eq('data', dataSel);
+                if (!error) {
+                    alert("Dia limpo com sucesso!");
+                    buscarDados();
+                }
+            }
         }
 
-        async function salvarProduto() {
-            const nome = document.getElementById('p-nome').value;
-            const preco = document.getElementById('p-preco').value;
-            await _supabase.from('produto').insert([{nome, preco}]);
-            location.reload();
+        async function deletarUm(id) {
+            if(confirm("Excluir este item?")) {
+                await _supabase.from('agendamento').delete().eq('id', id);
+                buscarDados();
+            }
         }
 
-        async function deletarProduto(id) { if(confirm("Apagar?")) { await _supabase.from('produto').delete().eq('id',id); carregarEstoque(); } }
-        carregarVendas();
+        buscarDados();
     </script>
 </body>
 </html>
