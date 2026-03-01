@@ -3,115 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Admin | Espetinho</title>
+    <title>Marmita do Chefe | Cardápio Profissional</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>@media print { .no-print { display: none; } }</style>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8f9fa; scroll-behavior: smooth; }
+        .header-img {
+            height: 180px;
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1544025162-d76694265947?w=1200');
+            background-size: cover; background-position: center;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 0 0 25px 25px;
+        }
+        .category-nav { position: sticky; top: 0; background: white; z-index: 40; display: flex; gap: 15px; padding: 15px; overflow-x: auto; border-bottom: 1px solid #eee; }
+        .product-card { background: white; margin: 10px 15px; padding: 15px; border-radius: 16px; display: flex; gap: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .product-img { width: 85px; height: 85px; border-radius: 12px; object-fit: cover; }
+        .float-cart {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 380px; background: #ea1d2c; padding: 14px 22px;
+            border-radius: 50px; color: white; display: flex; justify-content: space-between;
+            align-items: center; font-weight: 800; z-index: 100; box-shadow: 0 10px 20px rgba(234,29,44,0.3);
+        }
+        .btn-toggle { flex: 1; padding: 10px; border-radius: 10px; font-weight: 700; font-size: 13px; border: 2px solid #f3f4f6; background: white; }
+        .btn-toggle.active { border-color: #ea1d2c; background: #fff1f2; color: #ea1d2c; }
+        .hidden { display: none; }
+    </style>
 </head>
-<body class="bg-gray-100 pb-20">
+<body class="pb-24">
 
-    <nav class="bg-white p-4 shadow-sm sticky top-0 z-10 no-print flex justify-around">
-        <button onclick="mudarAba('vendas')" class="font-black text-orange-600 uppercase border-b-2 border-orange-600 pb-1">Vendas</button>
-        <button onclick="mudarAba('produtos')" class="font-black text-gray-400 uppercase">Produtos</button>
+    <header class="header-img">
+        <h1 class="text-white text-2xl font-black uppercase italic tracking-tighter text-center">Espetinho e Marmita <br><span class="text-orange-400">do Chefe</span></h1>
+    </header>
+
+    <nav class="category-nav">
+        <a href="#marmitas" class="px-4 py-2 bg-gray-100 rounded-full text-xs font-bold text-gray-500">Marmitas</a>
+        <a href="#espetinhos" class="px-4 py-2 bg-gray-100 rounded-full text-xs font-bold text-gray-500">Espetinhos</a>
+        <a href="#bebidas" class="px-4 py-2 bg-gray-100 rounded-full text-xs font-bold text-gray-500">Bebidas</a>
     </nav>
 
-    <main class="max-w-xl mx-auto p-4 no-print">
-        <section id="aba-vendas" class="space-y-4">
-            <div class="bg-gray-900 text-white p-6 rounded-[2rem] shadow-lg text-center">
-                <p class="text-[10px] uppercase font-bold opacity-50">Caixa de Hoje</p>
-                <h2 id="total-vendas" class="text-4xl font-black italic text-orange-500">R$ 0,00</h2>
-            </div>
-            <div id="lista-vendas" class="space-y-3"></div>
-        </section>
+    <main class="max-w-2xl mx-auto">
+        <div id="marmitas-titulo" class="p-4 font-bold text-gray-400 text-xs uppercase">Marmitas</div>
+        <div id="lista-marmitas"></div>
 
-        <section id="aba-produtos" class="hidden space-y-4">
-            <div class="bg-white p-6 rounded-3xl shadow-md border">
-                <input type="text" id="p-nome" placeholder="Nome" class="w-full p-4 bg-gray-50 border rounded-2xl mb-2 outline-none">
-                <input type="number" id="p-preco" placeholder="Preço" class="w-full p-4 bg-gray-50 border rounded-2xl mb-4 outline-none">
-                <button onclick="salvarProduto()" class="w-full bg-orange-600 text-white font-black p-4 rounded-2xl uppercase">Cadastrar</button>
-            </div>
-            <div id="lista-estoque" class="space-y-2"></div>
-        </section>
+        <div id="espetinhos-titulo" class="p-4 font-bold text-gray-400 text-xs uppercase mt-4">Espetinhos</div>
+        <div id="lista-espetinhos"></div>
+
+        <div id="bebidas-titulo" class="p-4 font-bold text-gray-400 text-xs uppercase mt-4">Bebidas</div>
+        <div id="lista-bebidas"></div>
     </main>
 
-    <div id="modal-comanda" class="fixed inset-0 bg-white z-50 hidden p-6 overflow-y-auto">
-        <div class="max-w-xs mx-auto border-2 border-black p-4 font-mono text-xs">
-            <h2 class="text-center font-bold text-lg border-b-2 border-dashed border-black pb-2 mb-2 uppercase">ESPETINHO DO CHEFE</h2>
-            <div id="com-header" class="mb-4"></div>
-            <p><b>CLIENTE:</b> <span id="com-cliente"></span></p>
-            <p><b>PAG:</b> <span id="com-pag"></span></p>
-            <p><b>ENTREGA:</b> <span id="com-tipo"></span></p>
-            <p><b>ITENS:</b></p>
-            <div id="com-itens" class="border-t border-dashed border-black pt-2 mb-4"></div>
-            <p class="text-right text-xl font-bold border-t-2 border-black pt-2">TOTAL: <span id="com-total"></span></p>
-            <div class="mt-10 flex gap-2 no-print">
-                <button onclick="window.print()" class="bg-black text-white p-4 flex-1 font-bold rounded-xl uppercase">Imprimir</button>
-                <button onclick="document.getElementById('modal-comanda').classList.add('hidden')" class="bg-gray-100 p-4 flex-1 font-bold rounded-xl uppercase">Fechar</button>
+    <div id="cart-bar" class="float-cart hidden" onclick="abrirModal()">
+        <div class="flex items-center gap-2">
+            <span class="bg-white text-red-600 w-6 h-6 flex items-center justify-center rounded-full text-[10px]" id="cart-count">0</span>
+            <span class="text-sm">Ver Sacola</span>
+        </div>
+        <span id="cart-total" class="text-sm">R$ 0,00</span>
+    </div>
+
+    <div id="modal-checkout" class="fixed inset-0 bg-black/60 z-[150] hidden flex items-end sm:items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-t-[2rem] sm:rounded-2xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <h2 class="text-center font-black text-lg mb-6 uppercase border-b pb-2">Finalizar Pedido</h2>
+            <div id="itens-sacola" class="space-y-3 mb-4"></div>
+
+            <div class="flex gap-2 mb-4">
+                <button onclick="setModo('entrega')" id="m-entrega" class="btn-toggle active">🛵 Entrega</button>
+                <button onclick="setModo('retirada')" id="m-retirada" class="btn-toggle">🏪 Retirada</button>
             </div>
+
+            <div class="mb-4">
+                <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Pagamento</p>
+                <div class="flex gap-2">
+                    <button onclick="setPagamento('Pix')" id="p-pix" class="btn-toggle">Pix</button>
+                    <button onclick="setPagamento('Cartão')" id="p-card" class="btn-toggle">Cartão</button>
+                    <button onclick="setPagamento('Dinheiro')" id="p-cash" class="btn-toggle">Dinheiro</button>
+                </div>
+            </div>
+
+            <div class="space-y-2 mb-6 text-sm text-gray-500 border-t pt-4">
+                <div class="flex justify-between"><span>Subtotal</span><span id="res-sub">R$ 0,00</span></div>
+                <div class="flex justify-between" id="box-taxa"><span>Entrega</span><span class="text-green-600 font-bold">R$ 5,00</span></div>
+                <div class="flex justify-between font-black text-gray-900 text-base"><span>TOTAL</span><span id="res-total">R$ 0,00</span></div>
+            </div>
+
+            <input type="text" id="nome-cli" placeholder="Seu Nome" class="w-full p-4 bg-gray-50 rounded-xl mb-3 outline-none border text-sm">
+            <input type="text" id="end-cli" placeholder="Seu Endereço" class="w-full p-4 bg-gray-50 rounded-xl mb-3 outline-none border text-sm">
+            
+            <button onclick="enviarPedido()" class="w-full bg-[#ea1d2c] text-white p-4 rounded-2xl font-black uppercase text-xs tracking-widest">Pedir no WhatsApp</button>
+            <button onclick="fecharModal()" class="w-full text-gray-400 text-[10px] font-bold mt-4 uppercase">Voltar</button>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const supabaseUrl = 'https://njxejwrdjemmrmdtenit.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qeGVqd3JkamVtbXJtZHRlbml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTg5MTYsImV4cCI6MjA4Nzc3NDkxNn0.HlZh45ptmLnt09nclbrwFNKshiyhBaLkBfhfLz-5xB4';
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const _supabase = supabase.createClient('https://njxejwrdjemmrmdtenit.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qeGVqd3JkamVtbXJtZHRlbml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTg5MTYsImV4cCI6MjA4Nzc3NDkxNn0.HlZh45ptmLnt09nclbrwFNKshiyhBaLkBfhfLz-5xB4');
 
-        function mudarAba(aba) {
-            document.getElementById('aba-vendas').classList.toggle('hidden', aba !== 'vendas');
-            document.getElementById('aba-produtos').classList.toggle('hidden', aba !== 'produtos');
-            if(aba==='vendas') carregarVendas(); else carregarEstoque();
-        }
+        let produtosDB = [];
+        let carrinho = {};
+        let modoEntrega = 'entrega';
+        let modoPagamento = '';
+        const TAXA = 5.00;
 
-        async function carregarVendas() {
-            const { data } = await _supabase.from('pedidos').select('*').order('id', {ascending: false});
-            let total = 0;
-            document.getElementById('lista-vendas').innerHTML = data.map(p => {
-                total += p.total;
-                return `
-                <div class="bg-white p-5 rounded-[1.5rem] shadow-sm border relative">
-                    <div class="absolute top-0 right-0 bg-gray-900 text-white px-3 py-1 rounded-bl-xl font-black text-[10px]">#${p.id}</div>
-                    <div class="font-bold text-gray-800">${p.cliente}</div>
-                    <div class="text-orange-600 font-black italic text-sm mb-3">R$ ${p.total.toFixed(2)} - ${p.status}</div>
-                    <div class="flex gap-1 no-print">
-                        <button onclick="mudarStatus(${p.id},'🥘 Preparando')" class="bg-gray-100 p-2 rounded text-[9px] font-bold">PREPARAR</button>
-                        <button onclick="mudarStatus(${p.id},'✅ Pronto')" class="bg-green-50 text-green-600 p-2 rounded text-[9px] font-bold">PRONTO</button>
-                        <button onclick='abrirComanda(${JSON.stringify(p)})' class="bg-black text-white p-2 rounded text-[9px] font-bold uppercase">Comanda</button>
-                    </div>
-                </div>`;
-            }).join('');
-            document.getElementById('total-vendas').innerText = `R$ ${total.toFixed(2)}`;
-        }
-
-        async function mudarStatus(id, st) { await _supabase.from('pedidos').update({status:st}).eq('id',id); carregarVendas(); }
-
-        function abrirComanda(p) {
-            document.getElementById('com-header').innerHTML = `<b>PEDIDO #${p.id}</b><br>${new Date(p.created_at).toLocaleString()}`;
-            document.getElementById('com-cliente').innerText = p.cliente;
-            document.getElementById('com-pag').innerText = p.forma_pagamento;
-            document.getElementById('com-tipo').innerText = p.tipo_entrega;
-            document.getElementById('com-itens').innerText = p.itens;
-            document.getElementById('com-total').innerText = `R$ ${p.total.toFixed(2)}`;
-            document.getElementById('modal-comanda').classList.remove('hidden');
-        }
-
-        async function carregarEstoque() {
+        async function carregarProdutos() {
             const { data } = await _supabase.from('produto').select('*').order('nome');
-            document.getElementById('lista-estoque').innerHTML = data.map(p => `
-                <div class="bg-white p-4 rounded-2xl border flex justify-between items-center text-sm">
-                    <span class="font-bold">${p.nome} - R$ ${p.preco.toFixed(2)}</span>
-                    <button onclick="deletarProduto(${p.id})" class="text-red-500 font-bold">X</button>
-                </div>`).join('');
+            produtosDB = data || [];
+            render();
         }
 
-        async function salvarProduto() {
-            const nome = document.getElementById('p-nome').value;
-            const preco = document.getElementById('p-preco').value;
-            await _supabase.from('produto').insert([{nome, preco}]);
-            location.reload();
+        function render() {
+            const filtrar = (cat) => produtosDB.filter(p => p.categoria === cat).map(p => `
+                <div class="product-card">
+                    <img src="${p.imagem}" class="product-img">
+                    <div class="flex-1">
+                        <h4 class="font-bold text-sm text-gray-800">${p.nome}</h4>
+                        <p class="text-[10px] text-gray-400 mt-1">${p.descricao || 'Completa com acompanhamentos.'}</p>
+                        <div class="flex justify-between items-center mt-3">
+                            <span class="font-black text-red-600 text-sm">R$ ${p.preco.toFixed(2)}</span>
+                            <div class="flex items-center gap-3 border rounded-full px-3 py-1 bg-white">
+                                <button onclick="alterarQtd(${p.id}, -1)" class="text-gray-300 font-bold text-lg">-</button>
+                                <span class="text-xs font-bold text-gray-700">${carrinho[p.id]?.qtd || 0}</span>
+                                <button onclick="alterarQtd(${p.id}, 1)" class="text-red-600 font-bold text-lg">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('lista-marmitas').innerHTML = filtrar('marmitas');
+            document.getElementById('lista-espetinhos').innerHTML = filtrar('espetinhos');
+            document.getElementById('lista-bebidas').innerHTML = filtrar('bebidas');
         }
 
-        async function deletarProduto(id) { if(confirm("Apagar?")) { await _supabase.from('produto').delete().eq('id',id); carregarEstoque(); } }
-        carregarVendas();
+        function alterarQtd(id, delta) {
+            if (!carrinho[id]) {
+                const p = produtosDB.find(x => x.id === id);
+                carrinho[id] = { n: p.nome, p: p.preco, qtd: 0 };
+            }
+            carrinho[id].qtd += delta;
+            if (carrinho[id].qtd <= 0) delete carrinho[id];
+            atualizarBarra();
+            render();
+        }
+
+        function atualizarBarra() {
+            let total = 0, count = 0;
+            Object.values(carrinho).forEach(i => { total += i.p * i.qtd; count += i.qtd; });
+            document.getElementById('cart-bar').classList.toggle('hidden', count === 0);
+            document.getElementById('cart-total').innerText = `R$ ${total.toFixed(2)}`;
+            document.getElementById('cart-count').innerText = count;
+        }
+
+        function setModo(m) {
+            modoEntrega = m;
+            document.getElementById('m-entrega').className = m === 'entrega' ? 'btn-toggle active' : 'btn-toggle';
+            document.getElementById('m-retirada').className = m === 'retirada' ? 'btn-toggle active' : 'btn-toggle';
+            document.getElementById('end-cli').classList.toggle('hidden', m === 'retirada');
+            document.getElementById('box-taxa').classList.toggle('hidden', m === 'retirada');
+            abrirModal();
+        }
+
+        function setPagamento(p) {
+            modoPagamento = p;
+            document.getElementById('p-pix').classList.toggle('active', p === 'Pix');
+            document.getElementById('p-card').classList.toggle('active', p === 'Cartão');
+            document.getElementById('p-cash').classList.toggle('active', p === 'Dinheiro');
+        }
+
+        function abrirModal() {
+            let sub = 0;
+            const listaHtml = Object.values(carrinho).map(i => {
+                sub += i.p * i.qtd;
+                return `<div class="flex justify-between text-xs font-bold bg-gray-50 p-2 rounded-lg"><span>${i.qtd}x ${i.n}</span><span>R$ ${(i.p*i.qtd).toFixed(2)}</span></div>`;
+            }).join('');
+            
+            document.getElementById('modal-checkout').classList.remove('hidden');
+            document.getElementById('itens-sacola').innerHTML = listaHtml;
+            document.getElementById('res-sub').innerText = `R$ ${sub.toFixed(2)}`;
+            document.getElementById('res-total').innerText = `R$ ${(modoEntrega === 'entrega' ? sub + TAXA : sub).toFixed(2)}`;
+        }
+
+        function fecharModal() { document.getElementById('modal-checkout').classList.add('hidden'); }
+
+        function enviarPedido() {
+            const nome = document.getElementById('nome-cli').value;
+            if(!nome || !modoPagamento) return alert("Preencha seu nome e pagamento!");
+            const itens = Object.values(carrinho).map(i => `${i.qtd}x ${i.n}`).join(', ');
+            const total = document.getElementById('res-total').innerText;
+            const end = modoEntrega === 'entrega' ? `%0A*Endereço:* ${document.getElementById('end-cli').value}` : '%0A*RETIRADA NO LOCAL*';
+            
+            const msg = `*PEDIDO*%0A*Cliente:* ${nome}${end}%0A*Itens:* ${itens}%0A*Pagamento:* ${modoPagamento}%0A*Total:* ${total}`;
+            window.location.href = `https://wa.me/5511999999999?text=${msg}`;
+        }
+
+        carregarProdutos();
     </script>
 </body>
 </html>

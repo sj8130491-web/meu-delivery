@@ -3,163 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Espetinho do Chefe | Gourmet</title>
+    <title>Marmita do Chefe | Cardápio Profissional</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8f9fa; }
-        .product-card { transition: all 0.2s ease-in-out; }
-        .product-card:active { transform: scale(0.96); }
-        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.3); }
+        .header-img {
+            height: 180px;
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1544025162-d76694265947?w=1200');
+            background-size: cover; background-position: center;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 0 0 25px 25px;
+        }
+        .category-nav { position: sticky; top: 0; background: white; z-index: 40; display: flex; gap: 15px; padding: 15px; overflow-x: auto; border-bottom: 1px solid #eee; }
+        .product-card { background: white; margin: 10px 15px; padding: 15px; border-radius: 16px; display: flex; gap: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .product-img { width: 85px; height: 85px; border-radius: 12px; object-fit: cover; }
+        .float-cart {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 380px; background: #ea1d2c; padding: 14px 22px;
+            border-radius: 50px; color: white; display: flex; justify-content: space-between;
+            align-items: center; font-weight: 800; z-index: 100; box-shadow: 0 10px 20px rgba(234,29,44,0.3);
+        }
+        .btn-toggle { flex: 1; padding: 10px; border-radius: 10px; font-weight: 700; font-size: 13px; border: 2px solid #f3f4f6; }
+        .btn-toggle.active { border-color: #ea1d2c; background: #fff1f2; color: #ea1d2c; }
+        .hidden { display: none; }
     </style>
 </head>
-<body class="pb-40">
+<body class="pb-24">
 
-    <header class="relative h-56 flex items-center justify-center overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=2069&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover brightness-[0.4]" alt="Churrasco">
-        <div class="relative text-center p-4">
-            <h1 class="text-white text-4xl font-black italic tracking-tighter uppercase">Espetinho <span class="text-orange-500">do Chefe</span></h1>
-            <p class="text-white/70 text-[10px] font-bold tracking-[0.3em] uppercase mt-1">O autêntico sabor da brasa</p>
-        </div>
+    <header class="header-img">
+        <h1 class="text-white text-2xl font-black uppercase italic tracking-tighter text-center">Espetinho e Marmita <br><span class="text-orange-400">do Chefe</span></h1>
     </header>
 
-    <main class="max-w-xl mx-auto p-6 -mt-8 relative z-10">
-        
-        <button id="btn-rastreio" onclick="verStatus()" class="w-full glass text-orange-600 p-4 rounded-3xl shadow-xl font-black text-xs mb-6 hidden flex items-center justify-center gap-2">
-           <span class="animate-ping w-2 h-2 bg-orange-500 rounded-full"></span> 📍 ACOMPANHAR MEU PEDIDO
-        </button>
+    <nav class="category-nav">
+        <a href="#marmitas" class="px-4 py-2 bg-gray-100 rounded-full text-xs font-bold text-gray-500">Marmitas</a>
+        <a href="#bebidas" class="px-4 py-2 bg-gray-100 rounded-full text-xs font-bold text-gray-500">Bebidas</a>
+    </nav>
 
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-black text-gray-800 italic uppercase tracking-tight">Cardápio</h2>
-            <div class="flex items-center gap-1 bg-green-100 px-3 py-1 rounded-full">
-                <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                <span class="text-green-700 text-[10px] font-black uppercase">Aberto</span>
-            </div>
-        </div>
+    <main class="max-w-2xl mx-auto">
+        <div id="marmitas" class="p-4 font-bold text-gray-400 text-xs uppercase">Nossas Marmitas</div>
+        <div id="lista-marmitas"></div>
 
-        <div id="lista-produtos" class="grid gap-4">Carregando...</div>
+        <div id="bebidas" class="p-4 font-bold text-gray-400 text-xs uppercase mt-4">Bebidas</div>
+        <div id="lista-bebidas"></div>
     </main>
 
-    <a href="https://wa.me/5511999999999?text=Olá! Gostaria de tirar uma dúvida." target="_blank" class="fixed bottom-32 right-6 bg-green-500 text-white p-4 rounded-2xl shadow-2xl z-50 hover:scale-110 transition-transform">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/></svg>
-    </a>
-
-    <div id="carrinho-bar" class="fixed bottom-8 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-gray-900/95 backdrop-blur-lg text-white p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center hidden z-40 border border-white/10">
-        <div>
-            <p class="text-[9px] text-gray-400 font-black uppercase tracking-widest">Subtotal</p>
-            <p id="carrinho-total" class="text-2xl font-black italic text-orange-500">R$ 0,00</p>
+    <div id="cart-bar" class="float-cart hidden" onclick="abrirModal()">
+        <div class="flex items-center gap-2">
+            <span class="bg-white text-red-600 w-6 h-6 flex items-center justify-center rounded-full text-[10px]" id="cart-count">0</span>
+            <span class="text-sm">Ver Sacola</span>
         </div>
-        <button onclick="abrirModal()" class="bg-orange-600 px-8 py-3 rounded-2xl font-black uppercase text-xs italic">Ver Sacola</button>
+        <span id="cart-total" class="text-sm">R$ 0,00</span>
     </div>
 
-    <div id="modal-checkout" class="fixed inset-0 bg-black/90 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-[3rem] p-8 space-y-6 max-h-[90vh] overflow-y-auto">
-            <h3 class="font-black text-2xl text-center uppercase italic text-gray-800">Minha Sacola</h3>
-            <div id="itens-sacola" class="space-y-2 border-b pb-4"></div>
-            <div class="space-y-3">
-                <input type="text" id="nome-cliente" placeholder="Seu Nome" class="w-full p-4 bg-gray-50 rounded-2xl outline-none border-none">
-                <input type="tel" id="tel-cliente" placeholder="Seu WhatsApp" class="w-full p-4 bg-gray-50 rounded-2xl outline-none border-none">
-                <select id="tipo-entrega" onchange="document.getElementById('end-cliente').style.display = this.value === 'Entrega' ? 'block' : 'none'" class="w-full p-4 bg-gray-50 rounded-2xl outline-none border-none">
-                    <option value="Entrega">🛵 Quero Entrega</option>
-                    <option value="Retirada">🏪 Vou retirar</option>
-                </select>
-                <input type="text" id="end-cliente" placeholder="Endereço Completo" class="w-full p-4 bg-gray-50 rounded-2xl outline-none border-none">
-                <select id="pagamento" class="w-full p-4 bg-gray-50 rounded-2xl outline-none border-none">
-                    <option value="Pix">Pix</option>
-                    <option value="Cartão">Cartão na Entrega</option>
-                    <option value="Dinheiro">Dinheiro</option>
-                </select>
+    <div id="modal-checkout" class="fixed inset-0 bg-black/60 z-[150] hidden flex items-end sm:items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-t-[2rem] sm:rounded-2xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <h2 class="text-center font-black text-lg mb-6 uppercase border-b pb-2">Finalizar Pedido</h2>
+            <div id="itens-sacola" class="space-y-3 mb-4"></div>
+
+            <div class="flex gap-2 mb-6">
+                <button onclick="setModo('entrega')" id="m-entrega" class="btn-toggle active">🛵 Entrega</button>
+                <button onclick="setModo('retirada')" id="m-retirada" class="btn-toggle">🏪 Retirada</button>
             </div>
-            <button onclick="finalizarPedido()" class="w-full bg-green-600 text-white p-5 rounded-2xl font-black uppercase italic shadow-lg shadow-green-600/20">Confirmar Pedido</button>
-            <button onclick="fecharModal()" class="w-full text-gray-400 font-bold text-[10px] uppercase">Ajustar Pedido</button>
+
+            <div class="space-y-2 mb-6 text-sm text-gray-500 border-t pt-4">
+                <div class="flex justify-between"><span>Subtotal</span><span id="res-sub">R$ 0,00</span></div>
+                <div class="flex justify-between" id="box-taxa"><span>Entrega</span><span class="text-green-600 font-bold">R$ 5,00</span></div>
+                <div class="flex justify-between font-black text-gray-900 text-base"><span>TOTAL</span><span id="res-total">R$ 0,00</span></div>
+            </div>
+
+            <input type="text" id="nome-cli" placeholder="Seu Nome" class="w-full p-4 bg-gray-50 rounded-xl mb-3 outline-none border">
+            <input type="text" id="end-cli" placeholder="Seu Endereço" class="w-full p-4 bg-gray-50 rounded-xl mb-3 outline-none border">
+            
+            <button onclick="enviarPedido()" class="w-full bg-[#ea1d2c] text-white p-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg">Pedir no WhatsApp</button>
+            <button onclick="fecharModal()" class="w-full text-gray-400 text-[10px] font-bold mt-4 uppercase">Voltar</button>
         </div>
     </div>
 
-    <div id="modal-status" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-10 text-center">
-            <p class="text-[10px] font-black text-gray-400 uppercase mb-2">Seu pedido está:</p>
-            <div id="status-atual" class="text-orange-600 font-black text-3xl uppercase italic animate-pulse">---</div>
-            <button onclick="document.getElementById('modal-status').classList.add('hidden')" class="mt-8 bg-gray-100 p-4 rounded-2xl w-full font-black text-gray-500 uppercase text-xs">Fechar</button>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const supabaseUrl = 'https://njxejwrdjemmrmdtenit.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qeGVqd3JkamVtbXJtZHRlbml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTg5MTYsImV4cCI6MjA4Nzc3NDkxNn0.HlZh45ptmLnt09nclbrwFNKshiyhBaLkBfhfLz-5xB4';
-        const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        const produtos = [
+            { id: 1, n: 'Marmita de Alcatra Acebolada', p: 28.00, c: 'marmitas', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200' },
+            { id: 2, n: 'Marmita de Frango Grelhado', p: 22.00, c: 'marmitas', img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=200' },
+            { id: 3, n: 'Marmita de Feijoada Completa', p: 30.00, c: 'marmitas', img: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=200' },
+            { id: 4, n: 'Marmita de Bife à Cavalo', p: 26.00, c: 'marmitas', img: 'https://images.unsplash.com/photo-1594005374167-5fd900fb82c9?w=200' },
+            { id: 5, n: 'Marmita de Panqueca de Carne', p: 24.00, c: 'marmitas', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=200' },
+            { id: 6, n: 'Coca-Cola Lata 350ml', p: 6.00, c: 'bebidas', img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=200' },
+            { id: 7, n: 'Guaraná Antarctica 350ml', p: 6.00, c: 'bebidas', img: 'https://images.unsplash.com/photo-1592318721950-711756a7f052?w=200' },
+            { id: 8, n: 'Fanta Laranja Lata', p: 6.00, c: 'bebidas', img: 'https://images.unsplash.com/photo-1624517452488-04869289c4ca?w=200' },
+            { id: 9, n: 'Sprite Lata 350ml', p: 6.00, c: 'bebidas', img: 'https://images.unsplash.com/photo-1625772290748-39126ddd9661?w=200' },
+            { id: 10, n: 'Suco Del Valle Uva', p: 7.50, c: 'bebidas', img: 'https://images.unsplash.com/photo-1621506289937-4c72179d4497?w=200' }
+        ];
 
-        let carrinho = [];
-        let idPedidoAtivo = localStorage.getItem('ultimo_pedido_id');
-        if(idPedidoAtivo) document.getElementById('btn-rastreio').classList.remove('hidden');
+        let carrinho = {};
+        let modoEntrega = 'entrega';
+        const TAXA = 5.00;
 
-        async function carregarProdutos() {
-            const { data } = await _supabase.from('produto').select('*').order('nome');
-            document.getElementById('lista-produtos').innerHTML = data.map(p => `
-                <div class="product-card bg-white p-4 rounded-[2rem] shadow-sm border border-gray-100 flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <div class="w-16 h-16 bg-orange-50 rounded-2xl flex items-center justify-center overflow-hidden">
-                             <img src="${p.imagem || 'https://cdn-icons-png.flaticon.com/512/706/706164.png'}" class="w-10 opacity-30">
+        function render() {
+            const filtrar = (cat) => produtos.filter(p => p.c === cat).map(p => `
+                <div class="product-card">
+                    <img src="${p.img}" class="product-img">
+                    <div class="flex-1">
+                        <h4 class="font-bold text-sm text-gray-800">${p.n}</h4>
+                        <p class="text-[10px] text-gray-400 mt-1">Completa com acompanhamentos.</p>
+                        <div class="flex justify-between items-center mt-3">
+                            <span class="font-black text-red-600 text-sm">R$ ${p.p.toFixed(2)}</span>
+                            <div class="flex items-center gap-3 border rounded-full px-3 py-1 bg-white">
+                                <button onclick="alterarQtd(${p.id}, -1)" class="text-gray-300 font-bold text-lg">-</button>
+                                <span class="text-xs font-bold text-gray-700">${carrinho[p.id]?.qtd || 0}</span>
+                                <button onclick="alterarQtd(${p.id}, 1)" class="text-red-600 font-bold text-lg">+</button>
+                            </div>
                         </div>
-                        <div>
-                            <h4 class="font-bold text-gray-800 text-sm">${p.nome}</h4>
-                            <p class="text-orange-600 font-black italic text-lg">R$ ${p.preco.toFixed(2)}</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <button onclick="remover('${p.nome}')" class="text-gray-300 font-black text-xl px-2">-</button>
-                        <button onclick="adicionar('${p.nome}', ${p.preco})" class="bg-gray-900 text-white w-10 h-10 rounded-xl font-black text-xl shadow-lg">+</button>
                     </div>
                 </div>
             `).join('');
+            document.getElementById('lista-marmitas').innerHTML = filtrar('marmitas');
+            document.getElementById('lista-bebidas').innerHTML = filtrar('bebidas');
         }
 
-        function adicionar(nome, preco) { carrinho.push({ nome, preco }); atualizarInterface(); }
-        function remover(nome) { const i = carrinho.findLastIndex(x => x.nome === nome); if(i !== -1) carrinho.splice(i, 1); atualizarInterface(); }
-        function atualizarInterface() {
-            const total = carrinho.reduce((acc, i) => acc + i.preco, 0);
-            document.getElementById('carrinho-bar').classList.toggle('hidden', carrinho.length === 0);
-            document.getElementById('carrinho-total').innerText = `R$ ${total.toFixed(2)}`;
-            document.getElementById('itens-sacola').innerHTML = carrinho.map((item, idx) => `
-                <div class="flex justify-between items-center bg-gray-50 p-3 rounded-2xl mb-1 text-xs">
-                    <span class="font-bold">${item.nome}</span>
-                    <button onclick="removerPorIndex(${idx})" class="text-red-500 font-black uppercase text-[10px]">X</button>
-                </div>`).join('');
+        function alterarQtd(id, delta) {
+            if (!carrinho[id]) {
+                const p = produtos.find(x => x.id === id);
+                carrinho[id] = { ...p, qtd: 0 };
+            }
+            carrinho[id].qtd += delta;
+            if (carrinho[id].qtd <= 0) delete carrinho[id];
+            atualizarBarra();
+            render();
         }
-        function removerPorIndex(idx) { carrinho.splice(idx, 1); atualizarInterface(); }
-        function abrirModal() { document.getElementById('modal-checkout').classList.remove('hidden'); }
+
+        function atualizarBarra() {
+            let total = 0, count = 0;
+            Object.values(carrinho).forEach(i => { total += i.p * i.qtd; count += i.qtd; });
+            document.getElementById('cart-bar').classList.toggle('hidden', count === 0);
+            document.getElementById('cart-total').innerText = `R$ ${total.toFixed(2)}`;
+            document.getElementById('cart-count').innerText = count;
+        }
+
+        function setModo(m) {
+            modoEntrega = m;
+            document.getElementById('m-entrega').className = m === 'entrega' ? 'btn-toggle active' : 'btn-toggle';
+            document.getElementById('m-retirada').className = m === 'retirada' ? 'btn-toggle active' : 'btn-toggle';
+            document.getElementById('end-cli').classList.toggle('hidden', m === 'retirada');
+            document.getElementById('box-taxa').classList.toggle('hidden', m === 'retirada');
+            abrirModal();
+        }
+
+        function abrirModal() {
+            let sub = 0;
+            const listaHtml = Object.values(carrinho).map(i => {
+                sub += i.p * i.qtd;
+                return `<div class="flex justify-between text-xs font-bold bg-gray-50 p-2 rounded-lg"><span>${i.qtd}x ${i.n}</span><span>R$ ${(i.p*i.qtd).toFixed(2)}</span></div>`;
+            }).join('');
+            
+            document.getElementById('modal-checkout').classList.remove('hidden');
+            document.getElementById('itens-sacola').innerHTML = listaHtml;
+            document.getElementById('res-sub').innerText = `R$ ${sub.toFixed(2)}`;
+            document.getElementById('res-total').innerText = `R$ ${(modoEntrega === 'entrega' ? sub + TAXA : sub).toFixed(2)}`;
+        }
+
         function fecharModal() { document.getElementById('modal-checkout').classList.add('hidden'); }
 
-        async function finalizarPedido() {
-            const nome = document.getElementById('nome-cliente').value;
-            const tel = document.getElementById('tel-cliente').value;
-            const entrega = document.getElementById('tipo-entrega').value;
-            const end = (entrega === 'Retirada') ? 'RETIRADA NO LOCAL' : document.getElementById('end-cliente').value;
-            const pag = document.getElementById('pagamento').value;
-            const total = carrinho.reduce((acc, i) => acc + i.preco, 0);
-            const itens = carrinho.map(i => i.nome).join(', ');
-
-            if(!nome || !tel) return alert("Preencha Nome e WhatsApp!");
-
-            const { data } = await _supabase.from('pedidos').insert([{
-                cliente: nome, whatsapp: tel, endereco: end, itens: itens, total: total,
-                tipo_entrega: entrega, forma_pagamento: pag, status: '🥘 Pendente'
-            }]).select();
-
-            if(data) {
-                const id = data[0].id;
-                localStorage.setItem('ultimo_pedido_id', id);
-                const msg = `*PEDIDO #${id}*%0A*Cliente:* ${nome}%0A*Itens:* ${itens}%0A*Total:* R$ ${total.toFixed(2)}%0A*Pagamento:* ${pag}`;
-                window.location.href = `https://wa.me/5511999999999?text=${msg}`; // TROQUE O NÚMERO
-            }
+        function enviarPedido() {
+            const nome = document.getElementById('nome-cli').value;
+            if(!nome) return alert("Seu nome por favor!");
+            const itens = Object.values(carrinho).map(i => `${i.qtd}x ${i.n}`).join(', ');
+            const total = document.getElementById('res-total').innerText;
+            const msg = `*PEDIDO*%0A*Cliente:* ${nome}%0A*Itens:* ${itens}%0A*Total:* ${total}%0A*Tipo:* ${modoEntrega.toUpperCase()}`;
+            window.location.href = `https://wa.me/5511999999999?text=${msg}`;
         }
 
-        async function verStatus() {
-            const id = localStorage.getItem('ultimo_pedido_id');
-            const { data } = await _supabase.from('pedidos').select('status').eq('id', id).single();
-            if(data) { document.getElementById('status-atual').innerText = data.status; document.getElementById('modal-status').classList.remove('hidden'); }
-        }
-        carregarProdutos();
+        render();
     </script>
 </body>
 </html>
