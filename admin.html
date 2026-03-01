@@ -2,199 +2,168 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marmita do Chefe | Cardápio Profissional</title>
+    <title>Admin | Marmita do Chefe</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8f9fa; scroll-behavior: smooth; }
-        .header-img {
-            height: 180px;
-            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1544025162-d76694265947?w=1200');
-            background-size: cover; background-position: center;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 0 0 25px 25px;
-        }
-        .category-nav { position: sticky; top: 0; background: white; z-index: 40; display: flex; gap: 15px; padding: 15px; overflow-x: auto; border-bottom: 1px solid #eee; }
-        .product-card { background: white; margin: 10px 15px; padding: 15px; border-radius: 16px; display: flex; gap: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
-        .product-img { width: 85px; height: 85px; border-radius: 12px; object-fit: cover; }
-        .float-cart {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 380px; background: #ea1d2c; padding: 14px 22px;
-            border-radius: 50px; color: white; display: flex; justify-content: space-between;
-            align-items: center; font-weight: 800; z-index: 100; box-shadow: 0 10px 20px rgba(234,29,44,0.3);
-        }
-        .btn-toggle { flex: 1; padding: 10px; border-radius: 10px; font-weight: 700; font-size: 13px; border: 2px solid #f3f4f6; background: white; }
-        .btn-toggle.active { border-color: #ea1d2c; background: #fff1f2; color: #ea1d2c; }
-        .hidden { display: none; }
-    </style>
 </head>
-<body class="pb-24">
+<body class="bg-gray-100 p-6">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-2xl font-bold mb-6">Painel Administrativo</h1>
 
-    <header class="header-img">
-        <h1 class="text-white text-2xl font-black uppercase italic tracking-tighter text-center">Espetinho e Marmita <br><span class="text-orange-400">do Chefe</span></h1>
-    </header>
-
-    <nav class="category-nav">
-        <a href="#marmitas" class="px-4 py-2 bg-gray-100 rounded-full text-xs font-bold text-gray-500">Marmitas</a>
-        <a href="#espetinhos" class="px-4 py-2 bg-gray-100 rounded-full text-xs font-bold text-gray-500">Espetinhos</a>
-        <a href="#bebidas" class="px-4 py-2 bg-gray-100 rounded-full text-xs font-bold text-gray-500">Bebidas</a>
-    </nav>
-
-    <main class="max-w-2xl mx-auto">
-        <div id="marmitas-titulo" class="p-4 font-bold text-gray-400 text-xs uppercase">Marmitas</div>
-        <div id="lista-marmitas"></div>
-
-        <div id="espetinhos-titulo" class="p-4 font-bold text-gray-400 text-xs uppercase mt-4">Espetinhos</div>
-        <div id="lista-espetinhos"></div>
-
-        <div id="bebidas-titulo" class="p-4 font-bold text-gray-400 text-xs uppercase mt-4">Bebidas</div>
-        <div id="lista-bebidas"></div>
-    </main>
-
-    <div id="cart-bar" class="float-cart hidden" onclick="abrirModal()">
-        <div class="flex items-center gap-2">
-            <span class="bg-white text-red-600 w-6 h-6 flex items-center justify-center rounded-full text-[10px]" id="cart-count">0</span>
-            <span class="text-sm">Ver Sacola</span>
+        <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+            <h2 class="font-bold mb-4 italic uppercase text-red-600">Cadastrar Novo Produto</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input type="text" id="add-nome" placeholder="Nome do Produto" class="border p-2 rounded">
+                <input type="number" id="add-preco" placeholder="Preço (Ex: 25.00)" class="border p-2 rounded">
+                <select id="add-categoria" class="border p-2 rounded">
+                    <option value="marmitas">Marmita</option>
+                    <option value="espetinhos">Espetinho</option>
+                    <option value="bebidas">Bebida</option>
+                </select>
+                <input type="text" id="add-img" placeholder="Link da Imagem" class="border p-2 rounded">
+                <textarea id="add-ingredientes" placeholder="Lista de Ingredientes" class="border p-2 rounded md:col-span-2"></textarea>
+                <button onclick="salvarProduto()" class="bg-green-600 text-white p-3 rounded font-bold md:col-span-2">SALVAR PRODUTO</button>
+            </div>
         </div>
-        <span id="cart-total" class="text-sm">R$ 0,00</span>
-    </div>
 
-    <div id="modal-checkout" class="fixed inset-0 bg-black/60 z-[150] hidden flex items-end sm:items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-t-[2rem] sm:rounded-2xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
-            <h2 class="text-center font-black text-lg mb-6 uppercase border-b pb-2">Finalizar Pedido</h2>
-            <div id="itens-sacola" class="space-y-3 mb-4"></div>
-
-            <div class="flex gap-2 mb-4">
-                <button onclick="setModo('entrega')" id="m-entrega" class="btn-toggle active">🛵 Entrega</button>
-                <button onclick="setModo('retirada')" id="m-retirada" class="btn-toggle">🏪 Retirada</button>
-            </div>
-
-            <div class="mb-4">
-                <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Pagamento</p>
-                <div class="flex gap-2">
-                    <button onclick="setPagamento('Pix')" id="p-pix" class="btn-toggle">Pix</button>
-                    <button onclick="setPagamento('Cartão')" id="p-card" class="btn-toggle">Cartão</button>
-                    <button onclick="setPagamento('Dinheiro')" id="p-cash" class="btn-toggle">Dinheiro</button>
+        <div class="bg-white p-6 rounded-xl shadow-md">
+            <h2 class="font-bold mb-4 italic uppercase text-gray-700">Produtos Ativos</h2>
+            <div id="tabela-admin" class="space-y-4">
                 </div>
-            </div>
-
-            <div class="space-y-2 mb-6 text-sm text-gray-500 border-t pt-4">
-                <div class="flex justify-between"><span>Subtotal</span><span id="res-sub">R$ 0,00</span></div>
-                <div class="flex justify-between" id="box-taxa"><span>Entrega</span><span class="text-green-600 font-bold">R$ 5,00</span></div>
-                <div class="flex justify-between font-black text-gray-900 text-base"><span>TOTAL</span><span id="res-total">R$ 0,00</span></div>
-            </div>
-
-            <input type="text" id="nome-cli" placeholder="Seu Nome" class="w-full p-4 bg-gray-50 rounded-xl mb-3 outline-none border text-sm">
-            <input type="text" id="end-cli" placeholder="Seu Endereço" class="w-full p-4 bg-gray-50 rounded-xl mb-3 outline-none border text-sm">
-            
-            <button onclick="enviarPedido()" class="w-full bg-[#ea1d2c] text-white p-4 rounded-2xl font-black uppercase text-xs tracking-widest">Pedir no WhatsApp</button>
-            <button onclick="fecharModal()" class="w-full text-gray-400 text-[10px] font-bold mt-4 uppercase">Voltar</button>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const _supabase = supabase.createClient('https://njxejwrdjemmrmdtenit.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qeGVqd3JkamVtbXJtZHRlbml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTg5MTYsImV4cCI6MjA4Nzc3NDkxNn0.HlZh45ptmLnt09nclbrwFNKshiyhBaLkBfhfLz-5xB4');
+        const _supabase = supabase.createClient('SUA_URL', 'SUA_KEY');
 
-        let produtosDB = [];
-        let carrinho = {};
-        let modoEntrega = 'entrega';
-        let modoPagamento = '';
-        const TAXA = 5.00;
+        async function salvarProduto() {
+            const p = {
+                nome: document.getElementById('add-nome').value,
+                preco: parseFloat(document.getElementById('add-preco').value),
+                categoria: document.getElementById('add-categoria').value,
+                imagem: document.getElementById('add-img').value,
+                descricao: document.getElementById('add-desc').value,
+                ingredientes: document.getElementById('add-ingredientes').value
+            };
 
-        async function carregarProdutos() {
-            const { data } = await _supabase.from('produto').select('*').order('nome');
-            produtosDB = data || [];
-            render();
+            const { error } = await _supabase.from('produto').insert([p]);
+            if (error) alert("Erro ao salvar!");
+            else { alert("Sucesso!"); location.reload(); }
         }
 
-        function render() {
-            const filtrar = (cat) => produtosDB.filter(p => p.categoria === cat).map(p => `
-                <div class="product-card">
-                    <img src="${p.imagem}" class="product-img">
-                    <div class="flex-1">
-                        <h4 class="font-bold text-sm text-gray-800">${p.nome}</h4>
-                        <p class="text-[10px] text-gray-400 mt-1">${p.descricao || 'Completa com acompanhamentos.'}</p>
-                        <div class="flex justify-between items-center mt-3">
-                            <span class="font-black text-red-600 text-sm">R$ ${p.preco.toFixed(2)}</span>
-                            <div class="flex items-center gap-3 border rounded-full px-3 py-1 bg-white">
-                                <button onclick="alterarQtd(${p.id}, -1)" class="text-gray-300 font-bold text-lg">-</button>
-                                <span class="text-xs font-bold text-gray-700">${carrinho[p.id]?.qtd || 0}</span>
-                                <button onclick="alterarQtd(${p.id}, 1)" class="text-red-600 font-bold text-lg">+</button>
-                            </div>
-                        </div>
+        async function carregarAdmin() {
+            const { data } = await _supabase.from('produto').select('*');
+            document.getElementById('tabela-admin').innerHTML = data.map(p => `
+                <div class="flex justify-between items-center border-b pb-2">
+                    <div>
+                        <p class="font-bold">${p.nome} - R$ ${p.preco}</p>
+                        <p class="text-xs text-gray-500">${p.categoria}</p>
                     </div>
+                    <button onclick="deletar(${p.id})" class="text-red-500 font-bold">Excluir</button>
                 </div>
             `).join('');
-
-            document.getElementById('lista-marmitas').innerHTML = filtrar('marmitas');
-            document.getElementById('lista-espetinhos').innerHTML = filtrar('espetinhos');
-            document.getElementById('lista-bebidas').innerHTML = filtrar('bebidas');
         }
-
-        function alterarQtd(id, delta) {
-            if (!carrinho[id]) {
-                const p = produtosDB.find(x => x.id === id);
-                carrinho[id] = { n: p.nome, p: p.preco, qtd: 0 };
-            }
-            carrinho[id].qtd += delta;
-            if (carrinho[id].qtd <= 0) delete carrinho[id];
-            atualizarBarra();
-            render();
-        }
-
-        function atualizarBarra() {
-            let total = 0, count = 0;
-            Object.values(carrinho).forEach(i => { total += i.p * i.qtd; count += i.qtd; });
-            document.getElementById('cart-bar').classList.toggle('hidden', count === 0);
-            document.getElementById('cart-total').innerText = `R$ ${total.toFixed(2)}`;
-            document.getElementById('cart-count').innerText = count;
-        }
-
-        function setModo(m) {
-            modoEntrega = m;
-            document.getElementById('m-entrega').className = m === 'entrega' ? 'btn-toggle active' : 'btn-toggle';
-            document.getElementById('m-retirada').className = m === 'retirada' ? 'btn-toggle active' : 'btn-toggle';
-            document.getElementById('end-cli').classList.toggle('hidden', m === 'retirada');
-            document.getElementById('box-taxa').classList.toggle('hidden', m === 'retirada');
-            abrirModal();
-        }
-
-        function setPagamento(p) {
-            modoPagamento = p;
-            document.getElementById('p-pix').classList.toggle('active', p === 'Pix');
-            document.getElementById('p-card').classList.toggle('active', p === 'Cartão');
-            document.getElementById('p-cash').classList.toggle('active', p === 'Dinheiro');
-        }
-
-        function abrirModal() {
-            let sub = 0;
-            const listaHtml = Object.values(carrinho).map(i => {
-                sub += i.p * i.qtd;
-                return `<div class="flex justify-between text-xs font-bold bg-gray-50 p-2 rounded-lg"><span>${i.qtd}x ${i.n}</span><span>R$ ${(i.p*i.qtd).toFixed(2)}</span></div>`;
-            }).join('');
-            
-            document.getElementById('modal-checkout').classList.remove('hidden');
-            document.getElementById('itens-sacola').innerHTML = listaHtml;
-            document.getElementById('res-sub').innerText = `R$ ${sub.toFixed(2)}`;
-            document.getElementById('res-total').innerText = `R$ ${(modoEntrega === 'entrega' ? sub + TAXA : sub).toFixed(2)}`;
-        }
-
-        function fecharModal() { document.getElementById('modal-checkout').classList.add('hidden'); }
-
-        function enviarPedido() {
-            const nome = document.getElementById('nome-cli').value;
-            if(!nome || !modoPagamento) return alert("Preencha seu nome e pagamento!");
-            const itens = Object.values(carrinho).map(i => `${i.qtd}x ${i.n}`).join(', ');
-            const total = document.getElementById('res-total').innerText;
-            const end = modoEntrega === 'entrega' ? `%0A*Endereço:* ${document.getElementById('end-cli').value}` : '%0A*RETIRADA NO LOCAL*';
-            
-            const msg = `*PEDIDO*%0A*Cliente:* ${nome}${end}%0A*Itens:* ${itens}%0A*Pagamento:* ${modoPagamento}%0A*Total:* ${total}`;
-            window.location.href = `https://wa.me/5511999999999?text=${msg}`;
-        }
-
-        carregarProdutos();
+        carregarAdmin();
     </script>
-</body>
+</body><div class="bg-white p-6 rounded-xl shadow-md mt-8">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="font-bold italic uppercase text-gray-700">Histórico de Pedidos (Hoje)</h2>
+        <button onclick="carregarRelatorio()" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase">Atualizar Lista</button>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+            <thead>
+                <tr class="border-b text-gray-400 uppercase text-[10px]">
+                    <th class="py-3">Hora</th>
+                    <th>Cliente</th>
+                    <th>Itens</th>
+                    <th>Total</th>
+                    <th class="text-right">Ação</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-pedidos">
+                </tbody>
+        </table>
+    </div>
+</div>
+
+<div id="comanda-print" class="hidden">
+    <style>
+        @media print {
+            body * { visibility: hidden; }
+            #comanda-print, #comanda-print * { visibility: visible; }
+            #comanda-print { position: absolute; left: 0; top: 0; width: 80mm; font-family: monospace; padding: 10px; }
+            .line { border-bottom: 1px dashed #000; margin: 5px 0; }
+            .text-center { text-align: center; }
+            .bold { font-weight: bold; }
+        }
+    </style>
+    <div class="text-center">
+        <h2 class="bold">ESPETINHO DO CHEFE</h2>
+        <p>Comanda de Pedido</p>
+    </div>
+    <div class="line"></div>
+    <div id="comanda-dados"></div>
+    <div class="line"></div>
+    <p class="text-center bold">Obrigado pela preferência!</p>
+</div>
+
+<script>
+    // Função para buscar pedidos do dia
+    async function carregarRelatorio() {
+        const hoje = new Date().toISOString().split('T')[0];
+        const { data, error } = await _supabase
+            .from('pedidos')
+            .select('*')
+            .gte('created_at', hoje)
+            .order('created_at', { ascending: false });
+
+        if (data) {
+            const html = data.map(p => {
+                const hora = new Date(p.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                return `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="py-4 font-bold">${hora}</td>
+                    <td>${p.cliente}</td>
+                    <td class="text-xs text-gray-500 truncate max-w-[200px]">${p.itens}</td>
+                    <td class="font-bold text-green-600">R$ ${p.total.toFixed(2)}</td>
+                    <td class="text-right">
+                        <button onclick="imprimirComanda('${p.id}')" class="bg-gray-800 text-white px-3 py-1 rounded text-[10px] font-bold">IMPRIMIR</button>
+                    </td>
+                </tr>`;
+            }).join('');
+            document.getElementById('tabela-pedidos').innerHTML = html;
+            
+            // Atualiza os contadores de faturamento
+            const totalSoma = data.reduce((acc, p) => acc + p.total, 0);
+            document.getElementById('total-vendas-dia').innerText = `R$ ${totalSoma.toFixed(2)}`;
+            document.getElementById('qtd-pedidos-dia').innerText = data.length;
+        }
+    }
+
+    // Função para formatar e abrir a impressão
+    async function imprimirComanda(id) {
+        const { data } = await _supabase.from('pedidos').select('*').eq('id', id).single();
+        
+        if (data) {
+            const hora = new Date(data.created_at).toLocaleTimeString();
+            const htmlComanda = `
+                <p><b>DATA:</b> ${new Date(data.created_at).toLocaleDateString()} ${hora}</p>
+                <p><b>CLIENTE:</b> ${data.cliente}</p>
+                <p><b>FORMA PAGTO:</b> ${data.pagamento}</p>
+                <div class="line"></div>
+                <p class="bold text-center">ITENS DO PEDIDO</p>
+                <p style="white-space: pre-wrap;">${data.itens.replace(/,/g, '\n')}</p>
+                <div class="line"></div>
+                <p class="bold" style="font-size: 1.2rem">TOTAL: R$ ${data.total.toFixed(2)}</p>
+            `;
+            document.getElementById('comanda-dados').innerHTML = htmlComanda;
+            window.print();
+        }
+    }
+
+    // Inicializa a lista
+    carregarRelatorio();
+</script>
 </html>
