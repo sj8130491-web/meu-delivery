@@ -2,109 +2,105 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Painel Admin | Gestão Delivery</title>
+    <title>Gestor do Chefe | Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print { body * { visibility: hidden; } #print-area, #print-area * { visibility: visible; } #print-area { position: absolute; left: 0; top: 0; width: 100%; } }
+    </style>
 </head>
-<body class="bg-gray-50 p-4 sm:p-8">
+<body class="bg-gray-100 p-4 md:p-10 font-sans">
     <div class="max-w-5xl mx-auto">
-        <h1 class="text-3xl font-black mb-8 text-gray-800">GESTÃO DE DELIVERY</h1>
+        <h1 class="text-3xl font-black text-gray-800 mb-8 italic">GESTOR <span class="text-red-600">PRO</span></h1>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-green-500">
-                <p class="text-gray-400 text-xs font-bold uppercase">Vendas Hoje</p>
-                <p id="fin-total" class="text-2xl font-black text-gray-800">R$ 0,00</p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-200">
+                <h2 class="font-bold text-gray-400 uppercase text-xs mb-6 tracking-widest">Novo Produto</h2>
+                <div class="space-y-3">
+                    <input id="n" type="text" placeholder="Nome do prato" class="w-full p-3 bg-gray-50 rounded-xl border outline-none focus:border-red-500">
+                    <input id="p" type="text" placeholder="Preço (Ex: 25.00)" class="w-full p-3 bg-gray-50 rounded-xl border outline-none">
+                    <select id="c" class="w-full p-3 bg-gray-50 rounded-xl border outline-none">
+                        <option value="marmitas">Marmitas</option>
+                        <option value="bebidas">Bebidas</option>
+                    </select>
+                    <input id="i" type="text" placeholder="Link da Imagem" class="w-full p-3 bg-gray-50 rounded-xl border outline-none">
+                    <button onclick="salvar()" class="w-full bg-red-600 text-white p-4 rounded-xl font-bold shadow-lg shadow-red-200 uppercase text-xs">Cadastrar Agora</button>
+                </div>
             </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-blue-500">
-                <p class="text-gray-400 text-xs font-bold uppercase">Pedidos</p>
-                <p id="fin-qtd" class="text-2xl font-black text-gray-800">0</p>
-            </div>
-        </div>
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm mb-8">
-            <h2 class="font-black text-sm uppercase mb-4 text-red-600 italic">Cadastrar Produto</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <input id="cad-nome" type="text" placeholder="Nome" class="border p-3 rounded-xl outline-none">
-                <input id="cad-preco" type="number" placeholder="Preço" class="border p-3 rounded-xl outline-none">
-                <select id="cad-cat" class="border p-3 rounded-xl outline-none">
-                    <option value="marmitas">Marmitas</option>
-                    <option value="espetinhos">Espetinhos</option>
-                    <option value="bebidas">Bebidas</option>
-                </select>
-                <input id="cad-img" type="text" placeholder="Link Imagem" class="border p-3 rounded-xl outline-none sm:col-span-3">
-                <textarea id="cad-desc" placeholder="Descrição" class="border p-3 rounded-xl outline-none sm:col-span-3"></textarea>
-                <textarea id="cad-ing" placeholder="Ingredientes" class="border p-3 rounded-xl outline-none sm:col-span-3"></textarea>
-                <button onclick="salvar()" class="bg-red-600 text-white font-black p-4 rounded-xl sm:col-span-3">CADASTRAR</button>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-200">
+                <h2 class="font-bold text-gray-400 uppercase text-xs mb-6 tracking-widest">Seu Cardápio</h2>
+                <div id="lista-prod" class="space-y-3 overflow-y-auto max-h-[400px]"></div>
             </div>
-        </div>
 
-        <div class="bg-white p-6 rounded-2xl shadow-sm overflow-hidden">
-            <h2 class="font-black text-sm uppercase mb-4">Pedidos de Hoje</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                    <thead><tr class="text-gray-400 border-b"><th>Hora</th><th>Cliente</th><th>Total</th><th class="text-right">Ação</th></tr></thead>
-                    <tbody id="lista-pedidos"></tbody>
-                </table>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-200">
+                <h2 class="font-bold text-gray-400 uppercase text-xs mb-6 tracking-widest">Pedidos de Hoje</h2>
+                <div id="lista-vendas" class="space-y-4"></div>
             </div>
         </div>
     </div>
 
-    <div id="print-area" class="hidden">
-        <div id="print-content" style="font-family: monospace; width: 80mm; padding: 10px;"></div>
-    </div>
+    <div id="print-area" class="hidden"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const _supabase = supabase.createClient('https://njxejwrdjemmrmdtenit.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qeGVqd3JkamVtbXJtZHRlbml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTg5MTYsImV4cCI6MjA4Nzc3NDkxNn0.HlZh45ptmLnt09nclbrwFNKshiyhBaLkBfhfLz-5xB4');
 
         async function salvar() {
-            const obj = {
-                nome: document.getElementById('cad-nome').value,
-                preco: parseFloat(document.getElementById('cad-preco').value),
-                categoria: document.getElementById('cad-cat').value,
-                imagem: document.getElementById('cad-img').value,
-                descricao: document.getElementById('cad-desc').value,
-                ingredientes: document.getElementById('cad-ing').value
+            const item = {
+                nome: document.getElementById('n').value,
+                preco: document.getElementById('p').value,
+                categoria: document.getElementById('c').value,
+                imagem: document.getElementById('i').value
             };
-            await _supabase.from('produto').insert([obj]);
-            location.reload();
+            if(!item.nome || !item.preco) return alert("Preencha os campos!");
+            await _supabase.from('produto').insert([item]);
+            alert("Sucesso!"); location.reload();
         }
 
-        async function carregarDados() {
-            const hoje = new Date().toISOString().split('T')[0];
-            const { data: pedidos } = await _supabase.from('pedidos').select('*').gte('created_at', hoje);
-            
-            if(pedidos) {
-                document.getElementById('fin-total').innerText = `R$ ${pedidos.reduce((a,b) => a+b.total, 0).toFixed(2)}`;
-                document.getElementById('fin-qtd').innerText = pedidos.length;
-                document.getElementById('lista-pedidos').innerHTML = pedidos.map(p => `
-                    <tr class="border-b">
-                        <td class="py-4">${new Date(p.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</td>
-                        <td class="font-bold">${p.cliente}</td>
-                        <td class="text-green-600 font-bold text-xs">R$ ${p.total.toFixed(2)}</td>
-                        <td class="text-right"><button onclick="imprimir('${p.id}')" class="bg-black text-white px-3 py-1 rounded text-[10px]">IMPRIMIR</button></td>
-                    </tr>
-                `).join('');
+        async function carregar() {
+            // Lista Produtos
+            const { data: prods } = await _supabase.from('produto').select('*');
+            document.getElementById('lista-prod').innerHTML = prods.map(p => `
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-xl border">
+                    <span class="text-xs font-bold">${p.nome}</span>
+                    <button onclick="excluir(${p.id})" class="text-red-500 font-black text-[10px]">X</button>
+                </div>
+            `).join('');
+
+            // Lista Pedidos
+            const { data: vends } = await _supabase.from('pedidos').select('*').order('created_at', {ascending: false});
+            document.getElementById('lista-vendas').innerHTML = vends.map(v => `
+                <div class="border-b pb-2">
+                    <p class="text-sm font-bold">${v.cliente}</p>
+                    <p class="text-[10px] text-gray-400">${v.itens}</p>
+                    <button onclick="imprimir('${v.id}')" class="mt-2 bg-black text-white px-3 py-1 rounded-lg text-[10px] font-bold uppercase">Imprimir</button>
+                </div>
+            `).join('');
+        }
+
+        async function excluir(id) {
+            if(confirm("Apagar produto?")) {
+                await _supabase.from('produto').delete().eq('id', id);
+                carregar();
             }
         }
 
         async function imprimir(id) {
-            const { data: p } = await _supabase.from('pedidos').select('*').eq('id', id).single();
-            const content = `
-                <div style="text-align:center"><b>ESPETINHO DO CHEFE</b><br>--- COMANDA ---</div><br>
-                <b>CLIENTE:</b> ${p.cliente}<br>
-                <b>PAGAMENTO:</b> ${p.pagamento}<br>
-                <b>DATA:</b> ${new Date(p.created_at).toLocaleString()}<br>
-                -------------------------<br>
-                <b>ITENS:</b><br>${p.itens.replace(/,/g, '<br>')}<br>
-                -------------------------<br>
-                <div style="font-size:16px"><b>TOTAL: R$ ${p.total.toFixed(2)}</b></div>
+            const { data: v } = await _supabase.from('pedidos').select('*').eq('id', id).single();
+            document.getElementById('print-area').innerHTML = `
+                <div style="font-family:monospace; padding: 20px; width: 80mm">
+                    <center><b>*** PEDIDO DO CHEFE ***</b></center><br>
+                    <b>CLIENTE:</b> ${v.cliente}<br>
+                    <b>PEDIDO:</b> ${v.itens}<br>
+                    <b>TOTAL:</b> R$ ${v.total.toFixed(2)}<br>
+                    <b>PAGAMENTO:</b> ${v.pagamento || 'A combinar'}<br>
+                    <br><center>Obrigado pela preferência!</center>
+                </div>
             `;
-            const win = window.open('', '', 'width=300,height=600');
-            win.document.write(content);
-            win.print(); win.close();
+            window.print();
         }
 
-        carregarDados();
+        carregar();
     </script>
 </body>
 </html>
