@@ -3,129 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>'Marmita do Chefe' | Cardápio Profissional</title>
+    <title>Marmita do Chefe | Cardápio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8f9fa; }
-        .header-img {
-            height: 180px;
-            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1544025162-d76694265947?w=1200');
-            background-size: cover; background-position: center;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 0 0 25px 25px;
-        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8f9fa; scroll-behavior: smooth; }
+        .header-img { height: 180px; background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1544025162-d76694265947?w=1200'); background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; border-radius: 0 0 25px 25px; }
         .category-nav { position: sticky; top: 0; background: white; z-index: 40; display: flex; gap: 15px; padding: 15px; overflow-x: auto; border-bottom: 1px solid #eee; }
         .product-card { background: white; margin: 10px 15px; padding: 15px; border-radius: 16px; display: flex; gap: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
         .product-img { width: 85px; height: 85px; border-radius: 12px; object-fit: cover; }
-        .float-cart {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 380px; background: #ea1d2c; padding: 14px 22px;
-            border-radius: 50px; color: white; display: flex; justify-content: space-between;
-            align-items: center; font-weight: 800; z-index: 100; box-shadow: 0 10px 20px rgba(234,29,44,0.3);
-        }
-        .btn-toggle { flex: 1; padding: 10px; border-radius: 10px; font-weight: 700; font-size: 13px; border: 2px solid #f3f4f6; }
+        .float-cart { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 380px; background: #ea1d2c; padding: 14px 22px; border-radius: 50px; color: white; display: flex; justify-content: space-between; align-items: center; font-weight: 800; z-index: 100; box-shadow: 0 10px 20px rgba(234,29,44,0.3); }
+        .btn-toggle { flex: 1; padding: 10px; border-radius: 10px; font-weight: 700; font-size: 13px; border: 2px solid #f3f4f6; background: white; }
         .btn-toggle.active { border-color: #ea1d2c; background: #fff1f2; color: #ea1d2c; }
         .hidden { display: none; }
     </style>
 </head>
 <body class="pb-24">
-
     <header class="header-img">
-        <h1 class="text-white text-2xl font-black uppercase italic tracking-tighter text-center">Espetinho e Marmita <br><span class="text-orange-400">do Chefe</span></h1>
+        <h1 class="text-white text-2xl font-black uppercase italic text-center">Espetinho e Marmita <br><span class="text-orange-400">do Chefe</span></h1>
     </header>
 
-    <nav class="category-nav">
-        <a href="#marmitas" class="px-4 py-2 bg-gray-100 rounded-full text-xs font-bold text-gray-500">Marmitas</a>
-        <a href="#bebidas" class="px-4 py-2 bg-gray-100 rounded-full text-xs font-bold text-gray-500">Bebidas</a>
-        <a href="#espetinho" class="px-4 py-2 bg-gray-100 rounded-full text-xs font-bold text-gray-500">Espetinhos</a>
-    </nav>
+    <nav class="category-nav" id="nav-categorias"></nav>
 
-    <main class="max-w-2xl mx-auto">
-        <div id="marmitas" class="p-4 font-bold text-gray-400 text-xs uppercase">Nossas Marmitas</div>
-        <div id="lista-marmitas"></div>
-
-        <div id="bebidas" class="p-4 font-bold text-gray-400 text-xs uppercase mt-4">Bebidas</div>
-        <div id="lista-bebidas"></div>
-        <div id="espetinho" class="p-4 font-bold text-gray-400 text-xs uppercase mt-4">Espetinhos</div>
-    </main>
+    <main class="max-w-2xl mx-auto" id="conteudo-cardapio"></main>
 
     <div id="cart-bar" class="float-cart hidden" onclick="abrirModal()">
         <div class="flex items-center gap-2">
             <span class="bg-white text-red-600 w-6 h-6 flex items-center justify-center rounded-full text-[10px]" id="cart-count">0</span>
             <span class="text-sm">Ver Sacola</span>
         </div>
-        <span id="cart-total" class="text-sm">R$ 0,00</span>
+        <span id="cart-total">R$ 0,00</span>
     </div>
 
-    <div id="modal-checkout" class="fixed inset-0 bg-black/60 z-[150] hidden flex items-end sm:items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-t-[2rem] sm:rounded-2xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
-            <h2 class="text-center font-black text-lg mb-6 uppercase border-b pb-2">Finalizar Pedido</h2>
+    <div id="modal-checkout" class="fixed inset-0 bg-black/60 z-[150] hidden flex items-end justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-t-[2rem] p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <h2 class="text-center font-black mb-6 border-b pb-2 uppercase">Finalizar Pedido</h2>
             <div id="itens-sacola" class="space-y-3 mb-4"></div>
-
-            <div class="flex gap-2 mb-6">
+            
+            <div class="flex gap-2 mb-4">
                 <button onclick="setModo('entrega')" id="m-entrega" class="btn-toggle active">🛵 Entrega</button>
                 <button onclick="setModo('retirada')" id="m-retirada" class="btn-toggle">🏪 Retirada</button>
             </div>
 
-            <div class="space-y-2 mb-6 text-sm text-gray-500 border-t pt-4">
-                <div class="flex justify-between"><span>Subtotal</span><span id="res-sub">R$ 0,00</span></div>
-                <div class="flex justify-between" id="box-taxa"><span>Entrega</span><span class="text-green-600 font-bold">R$ 5,00</span></div>
-                <div class="flex justify-between font-black text-gray-900 text-base"><span>TOTAL</span><span id="res-total">R$ 0,00</span></div>
+            <div class="mb-4">
+                <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Pagamento</p>
+                <div class="flex gap-2">
+                    <button onclick="setPagamento('Pix')" id="p-pix" class="btn-toggle">Pix</button>
+                    <button onclick="setPagamento('Cartão')" id="p-card" class="btn-toggle">Cartão</button>
+                    <button onclick="setPagamento('Dinheiro')" id="p-cash" class="btn-toggle">Dinheiro</button>
+                </div>
             </div>
 
-            <input type="text" id="nome-cli" placeholder="Seu Nome" class="w-full p-4 bg-gray-50 rounded-xl mb-3 outline-none border">
-            <input type="text" id="end-cli" placeholder="Seu Endereço" class="w-full p-4 bg-gray-50 rounded-xl mb-3 outline-none border">
+            <div class="space-y-2 mb-6 text-sm border-t pt-4">
+                <div class="flex justify-between text-gray-500"><span>Subtotal</span><span id="res-sub">R$ 0,00</span></div>
+                <div class="flex justify-between text-gray-500" id="box-taxa"><span>Entrega</span><span class="text-green-600 font-bold">R$ 5,00</span></div>
+                <div class="flex justify-between font-black text-lg"><span>TOTAL</span><span id="res-total">R$ 0,00</span></div>
+            </div>
+
+            <input type="text" id="nome-cli" placeholder="Seu Nome" class="w-full p-4 bg-gray-50 rounded-xl mb-3 border outline-none">
+            <input type="text" id="end-cli" placeholder="Seu Endereço" class="w-full p-4 bg-gray-50 rounded-xl mb-3 border outline-none">
             
-            <button onclick="enviarPedido()" class="w-full bg-[#ea1d2c] text-white p-4 rounded-2xl font-black uppercase text-xs tracking-widest shadow-lg">Pedir no WhatsApp</button>
+            <button onclick="enviarPedido()" class="w-full bg-[#ea1d2c] text-white p-4 rounded-2xl font-black uppercase text-xs shadow-lg">Pedir no WhatsApp</button>
             <button onclick="fecharModal()" class="w-full text-gray-400 text-[10px] font-bold mt-4 uppercase">Voltar</button>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const produtos = [
-            { id: 1, n: 'Marmita de Alcatra Acebolada', p: 28.00, c: 'marmitas', img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200' },
-            { id: 2, n: 'Marmita de Frango Grelhado', p: 22.00, c: 'marmitas', img: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=200' },
-            { id: 3, n: 'Marmita de Feijoada Completa', p: 30.00, c: 'marmitas', img: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=200' },
-            { id: 4, n: 'Marmita de Carne Seca', p: 26.00, c: 'marmitas', img: 'https://images.unsplash.com/photo-1594005374167-5fd900fb82c9?w=200' },
-            { id: 5, n: 'Marmita de Panqueca de Carne', p: 24.00, c: 'marmitas', img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=200' },
-            { id: 6, n: 'Coca-Cola Lata 350ml', p: 6.00, c: 'bebidas', img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=200' },
-            { id: 7, n: 'Guaraná Antarctica 350ml', p: 6.00, c: 'bebidas', img: 'https://images.unsplash.com/photo-1592318721950-711756a7f052?w=200' },
-            { id: 8, n: 'Fanta Laranja Lata', p: 6.00, c: 'bebidas', img: 'https://images.unsplash.com/photo-1624517452488-04869289c4ca?w=200' },
-            { id: 9, n: 'Sprite Lata 350ml', p: 6.00, c: 'bebidas', img: 'https://images.unsplash.com/photo-1625772290748-39126ddd9661?w=200' },
-            { id: 10, n: 'Suco Del Valle Uva', p: 7.50, c: 'bebidas', img: 'https://images.unsplash.com/photo-1621506289937-4c72179d4497?w=200' }
-        ];
+        const _supabase = supabase.createClient('https://njxejwrdjemmrmdtenit.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qeGVqd3JkamVtbXJtZHRlbml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTg5MTYsImV4cCI6MjA4Nzc3NDkxNn0.HlZh45ptmLnt09nclbrwFNKshiyhBaLkBfhfLz-5xB4');
 
+        let produtosDB = [];
         let carrinho = {};
         let modoEntrega = 'entrega';
+        let modoPagamento = '';
         const TAXA = 5.00;
 
+        async function carregar() {
+            const { data } = await _supabase.from('produto').select('*').order('nome');
+            produtosDB = data || [];
+            render();
+        }
+
         function render() {
-            const filtrar = (cat) => produtos.filter(p => p.c === cat).map(p => `
-                <div class="product-card">
-                    <img src="${p.img}" class="product-img">
-                    <div class="flex-1">
-                        <h4 class="font-bold text-sm text-gray-800">${p.n}</h4>
-                        <p class="text-[10px] text-gray-400 mt-1">Completa com acompanhamentos.</p>
-                        <div class="flex justify-between items-center mt-3">
-                            <span class="font-black text-red-600 text-sm">R$ ${p.p.toFixed(2)}</span>
-                            <div class="flex items-center gap-3 border rounded-full px-3 py-1 bg-white">
-                                <button onclick="alterarQtd(${p.id}, -1)" class="text-gray-300 font-bold text-lg">-</button>
-                                <span class="text-xs font-bold text-gray-700">${carrinho[p.id]?.qtd || 0}</span>
-                                <button onclick="alterarQtd(${p.id}, 1)" class="text-red-600 font-bold text-lg">+</button>
+            const cats = [...new Set(produtosDB.map(p => p.categoria))];
+            document.getElementById('nav-categorias').innerHTML = cats.map(c => `<a href="#${c}" class="px-4 py-2 bg-gray-100 rounded-full text-xs font-bold text-gray-500 capitalize">${c}</a>`).join('');
+
+            document.getElementById('conteudo-cardapio').innerHTML = cats.map(c => `
+                <div id="${c}" class="p-4 font-bold text-gray-400 text-xs uppercase mt-4">${c}</div>
+                ${produtosDB.filter(p => p.categoria === c).map(p => `
+                    <div class="product-card">
+                        <img src="${p.imagem}" class="product-img">
+                        <div class="flex-1">
+                            <h4 class="font-bold text-sm text-gray-800">${p.nome}</h4>
+                            <p class="text-[10px] text-gray-400 mt-1">${p.descricao || ''}</p>
+                            ${p.ingredientes ? `<p class="text-[9px] text-orange-600 italic">Ingredientes: ${p.ingredientes}</p>` : ''}
+                            <div class="flex justify-between items-center mt-3">
+                                <span class="font-black text-red-600 text-sm">R$ ${p.preco.toFixed(2)}</span>
+                                <div class="flex items-center gap-3 border rounded-full px-3 py-1">
+                                    <button onclick="alterarQtd(${p.id}, -1)" class="text-gray-300 font-bold text-lg">-</button>
+                                    <span class="text-xs font-bold">${carrinho[p.id]?.qtd || 0}</span>
+                                    <button onclick="alterarQtd(${p.id}, 1)" class="text-red-600 font-bold text-lg">+</button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                `).join('')}
             `).join('');
-            document.getElementById('lista-marmitas').innerHTML = filtrar('marmitas');
-            document.getElementById('lista-bebidas').innerHTML = filtrar('bebidas');
         }
 
         function alterarQtd(id, delta) {
             if (!carrinho[id]) {
-                const p = produtos.find(x => x.id === id);
-                carrinho[id] = { ...p, qtd: 0 };
+                const p = produtosDB.find(x => x.id === id);
+                carrinho[id] = { n: p.nome, p: p.preco, qtd: 0 };
             }
             carrinho[id].qtd += delta;
             if (carrinho[id].qtd <= 0) delete carrinho[id];
@@ -143,38 +132,49 @@
 
         function setModo(m) {
             modoEntrega = m;
-            document.getElementById('m-entrega').className = m === 'entrega' ? 'btn-toggle active' : 'btn-toggle';
-            document.getElementById('m-retirada').className = m === 'retirada' ? 'btn-toggle active' : 'btn-toggle';
+            document.getElementById('m-entrega').classList.toggle('active', m === 'entrega');
+            document.getElementById('m-retirada').classList.toggle('active', m === 'retirada');
             document.getElementById('end-cli').classList.toggle('hidden', m === 'retirada');
             document.getElementById('box-taxa').classList.toggle('hidden', m === 'retirada');
             abrirModal();
         }
 
+        function setPagamento(p) {
+            modoPagamento = p;
+            ['p-pix', 'p-card', 'p-cash'].forEach(id => document.getElementById(id).classList.remove('active'));
+            document.getElementById(`p-${p === 'Pix' ? 'pix' : p === 'Cartão' ? 'card' : 'cash'}`).classList.add('active');
+        }
+
         function abrirModal() {
             let sub = 0;
-            const listaHtml = Object.values(carrinho).map(i => {
+            const itensHtml = Object.values(carrinho).map(i => {
                 sub += i.p * i.qtd;
                 return `<div class="flex justify-between text-xs font-bold bg-gray-50 p-2 rounded-lg"><span>${i.qtd}x ${i.n}</span><span>R$ ${(i.p*i.qtd).toFixed(2)}</span></div>`;
             }).join('');
-            
             document.getElementById('modal-checkout').classList.remove('hidden');
-            document.getElementById('itens-sacola').innerHTML = listaHtml;
+            document.getElementById('itens-sacola').innerHTML = itensHtml;
             document.getElementById('res-sub').innerText = `R$ ${sub.toFixed(2)}`;
-            document.getElementById('res-total').innerText = `R$ ${(modoEntrega === 'entrega' ? sub + TAXA : sub).toFixed(2)}`;
+            const totalFinal = modoEntrega === 'entrega' ? sub + TAXA : sub;
+            document.getElementById('res-total').innerText = `R$ ${totalFinal.toFixed(2)}`;
         }
 
         function fecharModal() { document.getElementById('modal-checkout').classList.add('hidden'); }
 
-        function enviarPedido() {
+        async function enviarPedido() {
             const nome = document.getElementById('nome-cli').value;
-            if(!nome) return alert("Seu nome por favor!");
-            const itens = Object.values(carrinho).map(i => `${i.qtd}x ${i.n}`).join(', ');
-            const total = document.getElementById('res-total').innerText;
-            const msg = `*PEDIDO*%0A*Cliente:* ${nome}%0A*Itens:* ${itens}%0A*Total:* ${total}%0A*Tipo:* ${modoEntrega.toUpperCase()}`;
-            window.location.href = `https://wa.me/5511999999999?text=${msg}`;
+            if(!nome || !modoPagamento) return alert("Nome e Pagamento são obrigatórios!");
+            
+            const itensTxt = Object.values(carrinho).map(i => `${i.qtd}x ${i.n}`).join(', ');
+            const totalVal = parseFloat(document.getElementById('res-total').innerText.replace('R$ ', ''));
+
+            // Grava no Banco
+            await _supabase.from('pedidos').insert([{ cliente: nome, itens: itensTxt, total: totalVal, pagamento: modoPagamento }]);
+
+            const msg = `*NOVO PEDIDO*%0A*Cliente:* ${nome}%0A*Itens:* ${itensTxt}%0A*Pagamento:* ${modoPagamento}%0A*Total:* R$ ${totalVal.toFixed(2)}`;
+            window.location.href = `https://wa.me/49988821776?text=${msg}`;
         }
 
-        render();
+        carregar();
     </script>
 </body>
 </html>
