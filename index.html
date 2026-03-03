@@ -187,7 +187,7 @@ async function enviarPedido() {
 
         // 4. SÓ DEPOIS DE SALVAR, ABRE O WHATSAPP
         const msg = `*NOVO PEDIDO*%0A*Cliente:* ${nome}%0A*Itens:* ${itensTxt}%0A*Pagamento:* ${modoPagamento}%0A*Total:* R$ ${totalVal.toFixed(2)}%0A*Tipo:* ${modoEntrega.toUpperCase()}`;
-        window.location.href = `https://wa.me/5511999999999?text=${msg}`;
+        window.location.href = `https://wa.me/49988821776?text=${msg}`;
 
     } catch (err) {
         console.error("Erro ao salvar pedido:", err);
