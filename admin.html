@@ -3,161 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Admin | Marmita do Chefe</title>
+    <title>Painel | Marmita do Chefe</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Estilo para a impressão da comanda */
-        @media print {
-            body * { visibility: hidden; }
-            #area-impressao, #area-impressao * { visibility: visible; }
-            #area-impressao { position: absolute; left: 0; top: 0; width: 100%; font-family: monospace; }
-        }
-    </style>
-</head>
-<body class="bg-gray-100 p-4 pb-20">
-
-    <h1 class="text-2xl font-black mb-6 italic">GESTOR <span class="text-red-600">CHEFE</span></h1>
-
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div class="bg-white p-5 rounded-2xl shadow-sm border-b-4 border-green-500">
-            <p class="text-[10px] font-bold text-gray-400 uppercase">Faturamento Hoje</p>
-            <h2 id="fat-total" class="text-xl font-black text-gray-800">R$ 0,00</h2>
-        </div>
-        <div class="bg-white p-5 rounded-2xl shadow-sm border-b-4 border-blue-500">
-            <p class="text-[10px] font-bold text-gray-400 uppercase">Pedidos</p>
-            <h2 id="qtd-pedidos" class="text-xl font-black text-gray-800">0</h2>
-        </div>
-        <div class="bg-white p-5 rounded-2xl shadow-sm border-b-4 border-purple-500">
-            <p class="text-[10px] font-bold text-gray-400 uppercase">Ticket Médio</p>
-            <h2 id="ticket-medio" class="text-xl font-black text-gray-800">R$ 0,00</h2>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <section class="bg-white p-6 rounded-3xl shadow-sm">
-            <h2 class="text-lg font-black mb-4 uppercase text-gray-700">➕ Cadastrar Produto</h2>
-            <div class="space-y-3">
-                <input id="p-nome" type="text" placeholder="Nome do Produto" class="w-full p-3 bg-gray-50 border rounded-xl outline-none">
-                <div class="flex gap-2">
-                    <input id="p-preco" type="number" placeholder="Preço (Ex: 25.00)" class="flex-1 p-3 bg-gray-50 border rounded-xl outline-none">
-                    <select id="p-cat" class="flex-1 p-3 bg-gray-50 border rounded-xl outline-none">
-                        <option value="marmitas">Marmitas</option>
-                        <option value="bebidas">Bebidas</option>
-                        <option value="espetinhos">Espetinhos</option>
-                    </select>
-                </div>
-                <input id="p-img" type="text" placeholder="URL da Imagem" class="w-full p-3 bg-gray-50 border rounded-xl outline-none">
-                <button onclick="cadastrarProduto()" class="w-full bg-red-600 text-white p-4 rounded-xl font-black uppercase text-xs tracking-wider">Salvar no Cardápio</button>
-            </div>
-
-            <div id="lista-produtos-edit" class="mt-6 space-y-2 max-h-60 overflow-y-auto"></div>
-        </section>
-
-        <section>
-            <h2 class="text-lg font-black mb-4 uppercase text-gray-700">📦 Pedidos Recebidos</h2>
-            <div id="lista-pedidos" class="space-y-4"></div>
-        </section>
-    </div>
-
-    <div id="area-impressao" class="hidden"></div>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-4xl mx-auto">
+        <header class="flex justify-between items-center mb-6 bg-white p-6 rounded-2xl shadow-sm">
+            <div>
+                <h1 class="text-2xl font-black text-gray-800 uppercase italic">Painel de Pedidos</h1>
+                <p class="text-gray-400 text-sm">Gerencie suas vendas em tempo real</p>
+            </div>
+            <div class="text-right">
+                <p class="text-xs font-bold text-gray-400 uppercase">Faturamento Hoje</p>
+                <span id="faturamento" class="text-2xl font-black text-green-600">R$ 0,00</span>
+            </div>
+        </header>
+
+        <div id="lista-pedidos" class="space-y-4">
+            <p class="text-center text-gray-400">Carregando pedidos...</p>
+        </div>
+    </div>
+
     <script>
+        // Use as MESMAS credenciais do seu index.html
         const _supabase = supabase.createClient('https://njxejwrdjemmrmdtenit.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qeGVqd3JkamVtbXJtZHRlbml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTg5MTYsImV4cCI6MjA4Nzc3NDkxNn0.HlZh45ptmLnt09nclbrwFNKshiyhBaLkBfhfLz-5xB4');
 
-        // --- GESTÃO DE PRODUTOS ---
-        async function cadastrarProduto() {
-            const nome = document.getElementById('p-nome').value;
-            const preco = parseFloat(document.getElementById('p-preco').value);
-            const categoria = document.getElementById('p-cat').value;
-            const imagem = document.getElementById('p-img').value;
+        async function buscarPedidos() {
+            // Busca os pedidos do dia, do mais novo para o mais antigo
+            const { data, error } = await _supabase
+                .from('pedidos')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-            if(!nome || !preco) return alert("Preencha nome e preço!");
+            if (error) return console.error(error);
 
-            await _supabase.from('produto').insert([{ nome, preco, categoria, imagem }]);
-            alert("Produto Adicionado!");
-            location.reload();
+            renderizarPedidos(data);
         }
 
-        async function excluirProduto(id) {
-            if(confirm("Deseja remover este produto?")) {
-                await _supabase.from('produto').delete().eq('id', id);
-                carregarDados();
+        function renderizarPedidos(pedidos) {
+            const container = document.getElementById('lista-pedidos');
+            let faturamentoTotal = 0;
+
+            if (pedidos.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-400 p-10 bg-white rounded-2xl">Nenhum pedido hoje.</p>';
+                return;
             }
-        }
 
-        // --- GESTÃO DE PEDIDOS E DASHBOARD ---
-        async function carregarDados() {
-            // Carregar Pedidos
-            const { data: pedidos } = await _supabase.from('pedidos').select('*').order('created_at', {ascending: false});
-            
-            // Atualizar Dashboard
-            const total = pedidos.reduce((acc, p) => acc + p.total, 0);
-            document.getElementById("fat-total").innerText = `R$ ${total.toFixed(2)}`;
-            document.getElementById("qtd-pedidos").innerText = pedidos.length;
-            document.getElementById("ticket-medio").innerText = `R$ ${(pedidos.length > 0 ? total/pedidos.length : 0).toFixed(2)}`;
+            container.innerHTML = pedidos.map(p => {
+                faturamentoTotal += p.total;
+                const data = new Date(p.created_at).toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
 
-            // Renderizar Pedidos
-            document.getElementById("lista-pedidos").innerHTML = pedidos.map(p => `
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <h3 class="font-black text-gray-800">#${p.id.toString().slice(-4)} - ${p.cliente}</h3>
-                            <p class="text-[10px] text-gray-400 font-bold uppercase">${new Date(p.created_at).toLocaleString()}</p>
+                return `
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border-l-8 ${p.tipo === 'entrega' ? 'border-red-500' : 'border-blue-500'}">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="text-[10px] font-bold text-gray-400 uppercase">${data} - #${p.id}</span>
+                                <h3 class="font-black text-lg text-gray-800 uppercase">${p.cliente}</h3>
+                                <p class="text-sm text-gray-500">📍 ${p.endereco}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-[10px] font-black uppercase">${p.pagamento}</span>
+                                <p class="font-black text-xl text-gray-800 mt-2">R$ ${p.total.toFixed(2)}</p>
+                            </div>
                         </div>
-                        <button onclick="imprimirComanda('${p.id}')" class="bg-gray-100 p-2 rounded-lg hover:bg-gray-200">🖨️</button>
+                        <div class="bg-gray-50 p-4 rounded-xl text-sm text-gray-700 italic border border-dashed">
+                            ${p.itens}
+                        </div>
+                        <button onclick="window.print()" class="mt-4 text-[10px] font-bold text-red-500 uppercase hover:underline">Imprimir Comanda</button>
                     </div>
-                    <div class="text-xs text-gray-600 bg-gray-50 p-3 rounded-xl mb-3">${p.itens}</div>
-                    <div class="flex justify-between items-center">
-                        <span class="font-black text-red-600">R$ ${p.total.toFixed(2)}</span>
-                        <span class="text-[10px] font-bold px-2 py-1 rounded bg-green-100 text-green-600 uppercase">${p.pagamento}</span>
-                    </div>
-                </div>
-            `).join("");
+                `;
+            }).join('');
 
-            // Carregar lista de produtos para exclusão
-            const { data: prods } = await _supabase.from('produto').select('*').order('nome');
-            document.getElementById("lista-produtos-edit").innerHTML = prods.map(p => `
-                <div class="flex justify-between items-center p-2 bg-gray-50 rounded-lg text-xs">
-                    <span>${p.nome} - <b>R$ ${p.preco.toFixed(2)}</b></span>
-                    <button onclick="excluirProduto(${p.id})" class="text-red-500 font-bold">Remover</button>
-                </div>
-            `).join("");
+            document.getElementById('faturamento').innerText = `R$ ${faturamentoTotal.toFixed(2)}`;
         }
 
-        // --- FUNÇÃO DE IMPRESSÃO ---
-        async function imprimirComanda(id) {
-            const { data: p } = await _supabase.from('pedidos').select('*').eq('id', id).single();
-            
-            const conteudo = `
-                <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px;">
-                    <b style="font-size: 18px;">MARMITA DO CHEFE</b><br>
-                    Comanda de Pedido
-                </div>
-                <div style="padding: 10px 0; border-bottom: 1px dashed #000;">
-                    <b>CLIENTE:</b> ${p.cliente}<br>
-                    <b>DATA:</b> ${new Date(p.created_at).toLocaleString()}<br>
-                    <b>PAGAMENTO:</b> ${p.pagamento}
-                </div>
-                <div style="padding: 10px 0;">
-                    <b>ITENS:</b><br>
-                    ${p.itens.split(',').join('<br>')}
-                </div>
-                <div style="border-top: 1px dashed #000; padding-top: 10px; text-align: right;">
-                    <b style="font-size: 16px;">TOTAL: R$ ${p.total.toFixed(2)}</b>
-                </div>
-                <div style="text-align: center; margin-top: 20px; font-size: 10px;">
-                    Obrigado pela preferência!
-                </div>
-            `;
-
-            document.getElementById('area-impressao').innerHTML = conteudo;
-            window.print();
-        }
-
-        carregarDados();
-        // Atualiza pedidos automaticamente a cada 1 minuto
-        setInterval(carregarDados, 60000);
+        // Atualiza os pedidos a cada 30 segundos sozinho
+        buscarPedidos();
+        setInterval(buscarPedidos, 30000);
     </script>
 </body>
 </html>
