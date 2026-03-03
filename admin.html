@@ -10,41 +10,45 @@
 <body class="bg-gray-100 pb-10">
     <div class="max-w-5xl mx-auto p-4">
         
-        <header class="flex justify-between items-center mb-6 bg-white p-6 rounded-2xl shadow-sm">
+        <header class="flex justify-between items-start md:items-center mb-6 bg-white p-6 rounded-2xl shadow-sm border-b-4 border-blue-600">
             <div>
-                <h1 class="text-2xl font-black text-gray-800 uppercase italic">Gestão do Chefe</h1>
-                <span id="faturamento" class="text-2xl font-black text-green-600">R$ 0,00</span>
+                <h1 class="text-2xl font-black text-gray-800 uppercase italic leading-none text-blue-600">Gestão do Chefe</h1>
+                <div class="flex items-center gap-3 mt-3">
+                    <span id="faturamento" class="text-2xl font-black text-green-600">R$ 0,00</span>
+                    <button onclick="alternarLoja()" id="btn-status" class="px-4 py-1.5 rounded-full text-[11px] font-black uppercase transition-all duration-300 shadow-sm border">
+                        Carregando...
+                    </button>
+                </div>
             </div>
-            <button onclick="abrirModal()" class="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold text-sm">+ Novo Item</button>
+            <button onclick="abrirModal()" class="bg-blue-600 text-white px-5 py-3 rounded-xl font-bold text-sm shadow-lg hover:bg-blue-700">+ Novo Item</button>
         </header>
 
-        <div id="modal-produto" class="hidden bg-white p-6 rounded-2xl shadow-md mb-8 border-2 border-blue-100">
-            <h2 id="titulo-form" class="font-bold mb-4 uppercase text-gray-600 text-sm">Novo Item</h2>
+        <div id="modal-produto" class="hidden bg-white p-6 rounded-2xl shadow-xl mb-8 border-2 border-blue-100 animate-in fade-in zoom-in duration-200">
+            <h2 id="titulo-form" class="font-bold mb-4 uppercase text-gray-400 text-xs tracking-widest">Configurar Produto</h2>
             <input type="hidden" id="p-id">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input type="text" id="p-nome" placeholder="Nome do Produto" class="p-3 bg-gray-50 rounded-lg border outline-none">
-                <input type="number" id="p-preco" placeholder="Preço (Ex: 25.00)" class="p-3 bg-gray-50 rounded-lg border outline-none">
-                
-                <input type="text" id="p-cat" placeholder="Categoria (marmita, espetinho ou bebidas)" class="p-3 bg-gray-50 rounded-lg border outline-none">
-                
-                <input type="text" id="p-ingred" placeholder="Ingredientes / Descrição (Opcional)" class="p-3 bg-gray-50 rounded-lg border outline-none">
-                
-                <input type="text" id="p-img" placeholder="URL da Imagem (Cole o link aqui)" class="p-3 bg-gray-50 rounded-lg border outline-none md:col-span-2">
+                <input type="text" id="p-nome" placeholder="Nome do Produto" class="p-3 bg-gray-50 rounded-lg border outline-none focus:ring-2 ring-blue-500">
+                <input type="number" id="p-preco" placeholder="Preço (Ex: 25.00)" class="p-3 bg-gray-50 rounded-lg border outline-none focus:ring-2 ring-blue-500">
+                <input type="text" id="p-cat" placeholder="Categoria (marmita, espetinho ou bebidas)" class="p-3 bg-gray-50 rounded-lg border outline-none focus:ring-2 ring-blue-500">
+                <input type="text" id="p-ingred" placeholder="Ingredientes / Descrição" class="p-3 bg-gray-50 rounded-lg border outline-none focus:ring-2 ring-blue-500">
+                <input type="text" id="p-img" placeholder="URL da Imagem" class="p-3 bg-gray-50 rounded-lg border outline-none md:col-span-2 focus:ring-2 ring-blue-500">
 
-                <div class="flex gap-2 md:col-span-2">
-                    <button onclick="salvarProduto()" class="flex-1 bg-green-600 text-white p-3 rounded-lg font-black uppercase">Gravar no Banco</button>
-                    <button onclick="limparForm()" class="bg-gray-200 text-gray-600 p-3 rounded-lg font-bold">Cancelar</button>
+                <div class="flex gap-2 md:col-span-2 mt-2">
+                    <button onclick="salvarProduto()" class="flex-1 bg-green-600 text-white p-4 rounded-xl font-black uppercase shadow-md hover:bg-green-700">Gravar no Banco</button>
+                    <button onclick="limparForm()" class="bg-gray-100 text-gray-500 p-4 rounded-xl font-bold hover:bg-gray-200">Cancelar</button>
                 </div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
-                <h2 class="font-black mb-4 text-gray-400 uppercase text-xs tracking-widest">Pedidos de Hoje</h2>
+                <h2 class="font-black mb-4 text-gray-400 uppercase text-[10px] tracking-[0.2em] flex items-center gap-2">
+                    <span class="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span> Pedidos de Hoje
+                </h2>
                 <div id="lista-pedidos" class="space-y-4"></div>
             </div>
             <div>
-                <h2 class="font-black mb-4 text-gray-400 uppercase text-xs tracking-widest">Seu Cardápio</h2>
+                <h2 class="font-black mb-4 text-gray-400 uppercase text-[10px] tracking-[0.2em]">Seu Cardápio</h2>
                 <div id="lista-produtos" class="space-y-2"></div>
             </div>
         </div>
@@ -53,79 +57,104 @@
     <script>
         const _supabase = supabase.createClient('https://njxejwrdjemmrmdtenit.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qeGVqd3JkamVtbXJtZHRlbml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTg5MTYsImV4cCI6MjA4Nzc3NDkxNn0.HlZh45ptmLnt09nclbrwFNKshiyhBaLkBfhfLz-5xB4');
 
-        async function buscarPedidos() {
-            const { data } = await _supabase.from('pedidos').select('*').order('created_at', { ascending: false });
-            let totalDia = 0;
-            document.getElementById('lista-pedidos').innerHTML = (data || []).map(p => {
-                totalDia += p.total;
-                return `<div class="bg-white p-4 rounded-xl shadow-sm border-l-4 ${p.tipo === 'entrega' ? 'border-red-500' : 'border-blue-500'}">
-                    <h3 class="font-bold text-gray-800">${p.cliente}</h3>
-                    <p class="text-xs text-gray-500">${p.itens}</p>
-                    <p class="font-black text-red-600">R$ ${p.total.toFixed(2)}</p>
-                </div>`;
-            }).join('');
-            document.getElementById('faturamento').innerText = `R$ ${totalDia.toFixed(2)}`;
+        // --- STATUS DA LOJA ---
+        async function buscarStatus() {
+            const { data } = await _supabase.from('config').select('*').eq('id', 1).single();
+            if (data) atualizarBotaoStatus(data.loja_aberta);
+            else atualizarBotaoStatus(true);
         }
 
+        function atualizarBotaoStatus(aberta) {
+            const btn = document.getElementById('btn-status');
+            if (aberta) {
+                btn.innerText = "Loja Aberta";
+                btn.className = "px-4 py-1.5 rounded-full text-[11px] font-black uppercase bg-green-50 text-green-600 border-green-200 shadow-sm border";
+            } else {
+                btn.innerText = "Loja Fechada";
+                btn.className = "px-4 py-1.5 rounded-full text-[11px] font-black uppercase bg-red-50 text-red-600 border-red-200 shadow-sm border";
+            }
+        }
+
+        async function alternarLoja() {
+            const btn = document.getElementById('btn-status');
+            const novoEstado = btn.innerText.includes("Fechada");
+            const { error } = await _supabase.from('config').upsert({ id: 1, loja_aberta: novoEstado });
+            if (!error) atualizarBotaoStatus(novoEstado);
+            else alert("Erro ao mudar status! Verifique o SQL Editor.");
+        }
+
+        // --- PRODUTOS ---
         async function buscarProdutos() {
             const { data } = await _supabase.from('produto').select('*').order('nome');
             document.getElementById('lista-produtos').innerHTML = (data || []).map(p => `
-                <div class="bg-white p-3 rounded-lg flex justify-between items-center shadow-sm">
+                <div class="bg-white p-3 rounded-xl flex justify-between items-center shadow-sm border border-gray-100">
                     <div class="flex items-center gap-3">
-                        <img src="${p.imagem}" class="w-10 h-10 rounded object-cover">
+                        <img src="${p.imagem}" class="w-12 h-12 rounded-lg object-cover">
                         <div>
-                            <p class="font-bold text-sm">${p.nome}</p>
-                            <p class="text-[10px] text-gray-400 capitalize">${p.categoria}</p>
+                            <p class="font-bold text-sm text-gray-800">${p.nome}</p>
+                            <p class="text-[10px] text-blue-500 font-bold uppercase">${p.categoria}</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
-                        <button onclick='prepararEdicao(${JSON.stringify(p)})' class="text-blue-500 text-xs font-bold uppercase">Editar</button>
-                        <button onclick="excluirProduto(${p.id})" class="text-red-400 text-xs uppercase">Apagar</button>
+                    <div class="flex items-center gap-2">
+                        <button onclick='prepararEdicao(${JSON.stringify(p)})' class="bg-gray-50 text-blue-600 p-2 rounded-lg text-[10px] font-black uppercase hover:bg-blue-50">Editar</button>
+                        <button onclick="excluirProduto(${p.id})" class="text-red-300 hover:text-red-600 p-2 text-xs">✕</button>
                     </div>
                 </div>`).join('');
         }
 
+        async function salvarProduto() {
+            const id = document.getElementById('p-id').value;
+            const dados = {
+                nome: document.getElementById('p-nome').value,
+                preco: parseFloat(document.getElementById('p-preco').value),
+                categoria: document.getElementById('p-cat').value.toLowerCase().trim(),
+                ingredientes: document.getElementById('p-ingred').value,
+                imagem: document.getElementById('p-img').value || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400'
+            };
+
+            const { error } = id 
+                ? await _supabase.from('produto').update(dados).eq('id', id)
+                : await _supabase.from('produto').insert([dados]);
+
+            if(error) alert("Erro ao salvar!");
+            else location.reload();
+        }
+
         function prepararEdicao(p) {
             document.getElementById('modal-produto').classList.remove('hidden');
-            document.getElementById('titulo-form').innerText = "Editando: " + p.nome;
+            document.getElementById('titulo-form').innerText = "Editando Item";
             document.getElementById('p-id').value = p.id;
             document.getElementById('p-nome').value = p.nome;
             document.getElementById('p-preco').value = p.preco;
             document.getElementById('p-cat').value = p.categoria;
             document.getElementById('p-ingred').value = p.ingredientes || '';
             document.getElementById('p-img').value = p.imagem || '';
-            window.scrollTo(0,0);
+            window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-        async function salvarProduto() {
-            const id = document.getElementById('p-id').value;
-            const linkImagem = document.getElementById('p-img').value;
-
-            const dados = {
-                nome: document.getElementById('p-nome').value,
-                preco: parseFloat(document.getElementById('p-preco').value),
-                categoria: document.getElementById('p-cat').value.toLowerCase().trim(),
-                ingredientes: document.getElementById('p-ingred').value,
-                imagem: linkImagem || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400'
-            };
-
-            if(!dados.nome || !dados.preco || !dados.categoria) return alert("Preencha Nome, Preço e Categoria!");
-
-            let erro;
-            if(id) {
-                const { error } = await _supabase.from('produto').update(dados).eq('id', id);
-                erro = error;
-            } else {
-                const { error } = await _supabase.from('produto').insert([dados]);
-                erro = error;
+        async function excluirProduto(id) {
+            if(confirm("Apagar item?")) {
+                await _supabase.from('produto').delete().eq('id', id);
+                buscarProdutos();
             }
+        }
 
-            if(erro) {
-                console.error(erro);
-                alert("Erro ao salvar no banco!");
-            } else {
-                location.reload();
-            }
+        // --- PEDIDOS ---
+        async function buscarPedidos() {
+            const { data } = await _supabase.from('pedidos').select('*').order('created_at', { ascending: false });
+            let totalDia = 0;
+            document.getElementById('lista-pedidos').innerHTML = (data || []).map(p => {
+                totalDia += p.total;
+                return `<div class="bg-white p-4 rounded-xl shadow-sm border-l-4 ${p.tipo === 'entrega' ? 'border-red-500' : 'border-blue-500'}">
+                    <div class="flex justify-between items-start">
+                        <h3 class="font-black text-gray-800 text-sm">${p.cliente}</h3>
+                        <span class="text-[9px] font-bold px-2 py-0.5 bg-gray-100 rounded text-gray-500 uppercase">${p.pagamento}</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">${p.itens}</p>
+                    <p class="font-black text-green-600 mt-2 text-base">R$ ${p.total.toFixed(2)}</p>
+                </div>`;
+            }).join('');
+            document.getElementById('faturamento').innerText = `R$ ${totalDia.toFixed(2)}`;
         }
 
         function limparForm() {
@@ -141,19 +170,13 @@
         function abrirModal() {
             limparForm();
             document.getElementById('modal-produto').classList.remove('hidden');
-            document.getElementById('titulo-form').innerText = "Novo Item";
         }
 
-        async function excluirProduto(id) {
-            if(confirm("Tem certeza que deseja apagar?")) {
-                await _supabase.from('produto').delete().eq('id', id);
-                buscarProdutos();
-            }
-        }
-
+        // INICIALIZAÇÃO
         buscarPedidos();
         buscarProdutos();
-        setInterval(buscarPedidos, 30000); // Atualiza pedidos a cada 30 segundos
+        buscarStatus();
+        setInterval(buscarPedidos, 20000);
     </script>
 </body>
 </html>
