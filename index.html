@@ -14,13 +14,13 @@
         .product-img { width: 85px; height: 85px; border-radius: 12px; object-fit: cover; }
         .float-cart { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 380px; background: #ea1d2c; padding: 14px 22px; border-radius: 50px; color: white; display: flex; justify-content: space-between; align-items: center; font-weight: 800; z-index: 100; box-shadow: 0 10px 20px rgba(234,29,44,0.3); }
         .btn-toggle { flex: 1; padding: 10px; border-radius: 10px; font-weight: 700; font-size: 13px; border: 2px solid #f3f4f6; background: white; }
-        .btn-toggle.active { border-color: #c3787d; background: #4911a9; color: #ea1d2c; }
+        .btn-toggle.active { border-color: #ea1d2c; background: #ea1d2c; color: white; }
         .hidden { display: none; }
     </style>
 </head>
 <body class="pb-24">
     <header class="header-img">
-        <h1 class="text-white text-3xl font-black uppercase italic text-center" style=>Espetinho e Marmita <br><span class="text-orange-400">do Chefe</span></h1>
+        <h1 class="text-white text-3xl font-black uppercase italic text-center">Espetinho e Marmita <br><span class="text-orange-400">do Chefe</span></h1>
     </header>
 
     <nav class="category-nav" id="nav-categorias"></nav>
@@ -70,132 +70,140 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-  const _supabase = supabase.createClient('https://njxejwrdjemmrmdtenit.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qeGVqd3JkamVtbXJtZHRlbml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTg5MTYsImV4cCI6MjA4Nzc3NDkxNn0.HlZh45ptmLnt09nclbrwFNKshiyhBaLkBfhfLz-5xB4');
+        const _supabase = supabase.createClient('https://njxejwrdjemmrmdtenit.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5qeGVqd3JkamVtbXJtZHRlbml0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTg5MTYsImV4cCI6MjA4Nzc3NDkxNn0.HlZh45ptmLnt09nclbrwFNKshiyhBaLkBfhfLz-5xB4');
 
-let produtosDB = [];
-let carrinho = {};
-let modoEntrega = 'entrega';
-let modoPagamento = '';
-const TAXA = 5.00;
+        let produtosDB = [];
+        let carrinho = {};
+        let modoEntrega = 'entrega';
+        let modoPagamento = '';
+        const TAXA = 5.00;
 
-async function carregar() {
-    const { data } = await _supabase.from('produto').select('*').order('nome');
-    produtosDB = data || [];
-    render();
-}
+        async function carregar() {
+            const { data } = await _supabase.from('produto').select('*').order('nome');
+            produtosDB = data || [];
+            render();
+        }
 
-function render() {
-    const cats = [...new Set(produtosDB.map(p => p.categoria))];
-    document.getElementById('nav-categorias').innerHTML = cats.map(c => `<a href="#${c}" class="px-4 py-2 bg-gray-100 rounded-full text-xs font-bold text-gray-500 capitalize">${c}</a>`).join('');
+        function render() {
+            // CATEGORIAS FIXAS
+            const categoriasOficiais = ['marmita', 'espetinho', 'bebidas'];
+            
+            // Gerar Navegação
+            document.getElementById('nav-categorias').innerHTML = categoriasOficiais.map(c => 
+                `<a href="#${c}" class="px-4 py-2 bg-gray-100 rounded-full text-xs font-bold text-gray-500 capitalize">${c}</a>`
+            ).join('');
 
-    document.getElementById('conteudo-cardapio').innerHTML = cats.map(c => `
-        <div id="${c}" class="p-4 font-bold text-gray-400 text-xs uppercase mt-4">${c}</div>
-        ${produtosDB.filter(p => p.categoria === c).map(p => `
-            <div class="product-card">
-                <img src="${p.imagem}" class="product-img">
-                <div class="flex-1">
-                    <h4 class="font-bold text-sm text-gray-800">${p.nome}</h4>
-                    <p class="text-[10px] text-gray-400 mt-1">${p.descricao || ''}</p>
-                    ${p.ingredientes ? `<p class="text-[9px] text-orange-600 italic">Ingredientes: ${p.ingredientes}</p>` : ''}
-                    <div class="flex justify-between items-center mt-3">
-                        <span class="font-black text-red-600 text-sm">R$ ${p.preco.toFixed(2)}</span>
-                        <div class="flex items-center gap-3 border rounded-full px-3 py-1">
-                            <button onclick="alterarQtd(${p.id}, -1)" class="text-gray-300 font-bold text-lg">-</button>
-                            <span class="text-xs font-bold">${carrinho[p.id]?.qtd || 0}</span>
-                            <button onclick="alterarQtd(${p.id}, 1)" class="text-red-600 font-bold text-lg">+</button>
+            // Gerar Produtos filtrados
+            document.getElementById('conteudo-cardapio').innerHTML = categoriasOficiais.map(catFixa => {
+                const produtosDaCat = produtosDB.filter(p => p.categoria.toLowerCase() === catFixa);
+                
+                if (produtosDaCat.length === 0) return '';
+
+                return `
+                    <div id="${catFixa}" class="p-4 font-bold text-gray-400 text-xs uppercase mt-4 border-b">${catFixa}</div>
+                    ${produtosDaCat.map(p => `
+                        <div class="product-card">
+                            <img src="${p.imagem}" class="product-img">
+                            <div class="flex-1">
+                                <h4 class="font-bold text-sm text-gray-800">${p.nome}</h4>
+                                <p class="text-[10px] text-gray-400 mt-1">${p.descricao || ''}</p>
+                                ${p.ingredientes ? `<p class="text-[10px] text-orange-500 font-medium italic mt-1">${p.ingredientes}</p>` : ''}
+                                
+                                <div class="flex justify-between items-center mt-3">
+                                    <span class="font-black text-red-600 text-sm">R$ ${p.preco.toFixed(2)}</span>
+                                    <div class="flex items-center gap-3 border rounded-full px-3 py-1">
+                                        <button onclick="alterarQtd(${p.id}, -1)" class="text-gray-300 font-bold text-lg">-</button>
+                                        <span class="text-xs font-bold">${carrinho[p.id]?.qtd || 0}</span>
+                                        <button onclick="alterarQtd(${p.id}, 1)" class="text-red-600 font-bold text-lg">+</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        `).join('')}
-    `).join('');
-}
+                    `).join('')}
+                `;
+            }).join('');
+        }
 
-function alterarQtd(id, delta) {
-    if (!carrinho[id]) {
-        const p = produtosDB.find(x => x.id === id);
-        if(!p) return;
-        carrinho[id] = { n: p.nome, p: p.preco, qtd: 0 };
-    }
-    carrinho[id].qtd += delta;
-    if (carrinho[id].qtd <= 0) delete carrinho[id];
-    atualizarBarra();
-    render();
-}
+        function alterarQtd(id, delta) {
+            if (!carrinho[id]) {
+                const p = produtosDB.find(x => x.id === id);
+                if(!p) return;
+                carrinho[id] = { n: p.nome, p: p.preco, qtd: 0 };
+            }
+            carrinho[id].qtd += delta;
+            if (carrinho[id].qtd <= 0) delete carrinho[id];
+            atualizarBarra();
+            render();
+        }
 
-function atualizarBarra() {
-    let total = 0, count = 0;
-    Object.values(carrinho).forEach(i => { total += i.p * i.qtd; count += i.qtd; });
-    document.getElementById('cart-bar').classList.toggle('hidden', count === 0);
-    document.getElementById('cart-total').innerText = `R$ ${total.toFixed(2)}`;
-    document.getElementById('cart-count').innerText = count;
-}
+        function atualizarBarra() {
+            let total = 0, count = 0;
+            Object.values(carrinho).forEach(i => { total += i.p * i.qtd; count += i.qtd; });
+            document.getElementById('cart-bar').classList.toggle('hidden', count === 0);
+            document.getElementById('cart-total').innerText = `R$ ${total.toFixed(2)}`;
+            document.getElementById('cart-count').innerText = count;
+        }
 
-function setModo(m) {
-    modoEntrega = m;
-    document.getElementById('m-entrega').classList.toggle('active', m === 'entrega');
-    document.getElementById('m-retirada').classList.toggle('active', m === 'retirada');
-    document.getElementById('end-cli').classList.toggle('hidden', m === 'retirada');
-    document.getElementById('box-taxa').classList.toggle('hidden', m === 'retirada');
-    abrirModal();
-}
+        function setModo(m) {
+            modoEntrega = m;
+            document.getElementById('m-entrega').classList.toggle('active', m === 'entrega');
+            document.getElementById('m-retirada').classList.toggle('active', m === 'retirada');
+            document.getElementById('end-cli').classList.toggle('hidden', m === 'retirada');
+            document.getElementById('box-taxa').classList.toggle('hidden', m === 'retirada');
+            abrirModal();
+        }
 
-function setPagamento(p) {
-    modoPagamento = p;
-    ['p-pix', 'p-card', 'p-cash'].forEach(id => document.getElementById(id).classList.remove('active'));
-    const btnId = p === 'Pix' ? 'p-pix' : p === 'Cartão' ? 'p-card' : 'p-cash';
-    document.getElementById(btnId).classList.add('active');
-}
+        function setPagamento(p) {
+            modoPagamento = p;
+            ['p-pix', 'p-card', 'p-cash'].forEach(id => document.getElementById(id).classList.remove('active'));
+            const btnId = p === 'Pix' ? 'p-pix' : p === 'Cartão' ? 'p-card' : 'p-cash';
+            document.getElementById(btnId).classList.add('active');
+        }
 
-function abrirModal() {
-    let sub = 0;
-    const itensHtml = Object.values(carrinho).map(i => {
-        sub += i.p * i.qtd;
-        return `<div class="flex justify-between text-xs font-bold bg-gray-50 p-2 rounded-lg"><span>${i.qtd}x ${i.n}</span><span>R$ ${(i.p*i.qtd).toFixed(2)}</span></div>`;
-    }).join('');
-    document.getElementById('modal-checkout').classList.remove('hidden');
-    document.getElementById('itens-sacola').innerHTML = itensHtml;
-    document.getElementById('res-sub').innerText = `R$ ${sub.toFixed(2)}`;
-    const totalFinal = modoEntrega === 'entrega' ? sub + TAXA : sub;
-    document.getElementById('res-total').innerText = `R$ ${totalFinal.toFixed(2)}`;
-}
+        function abrirModal() {
+            let sub = 0;
+            const itensHtml = Object.values(carrinho).map(i => {
+                sub += i.p * i.qtd;
+                return `<div class="flex justify-between text-xs font-bold bg-gray-50 p-2 rounded-lg"><span>${i.qtd}x ${i.n}</span><span>R$ ${(i.p*i.qtd).toFixed(2)}</span></div>`;
+            }).join('');
+            document.getElementById('modal-checkout').classList.remove('hidden');
+            document.getElementById('itens-sacola').innerHTML = itensHtml;
+            document.getElementById('res-sub').innerText = `R$ ${sub.toFixed(2)}`;
+            const totalFinal = modoEntrega === 'entrega' ? sub + TAXA : sub;
+            document.getElementById('res-total').innerText = `R$ ${totalFinal.toFixed(2)}`;
+        }
 
-function fecharModal() { document.getElementById('modal-checkout').classList.add('hidden'); }
+        function fecharModal() { document.getElementById('modal-checkout').classList.add('hidden'); }
 
-async function enviarPedido() {
-    const nome = document.getElementById('nome-cli').value;
-    const endereco = document.getElementById('end-cli').value;
-    
-    if(!nome || !modoPagamento) return alert("Nome e Pagamento são obrigatórios!");
-    if(modoEntrega === 'entrega' && !endereco) return alert("Digite o endereço de entrega!");
+        async function enviarPedido() {
+            const nome = document.getElementById('nome-cli').value;
+            const endereco = document.getElementById('end-cli').value;
+            
+            if(!nome || !modoPagamento) return alert("Nome e Pagamento são obrigatórios!");
+            if(modoEntrega === 'entrega' && !endereco) return alert("Digite o endereço de entrega!");
 
-    const itensTxt = Object.values(carrinho).map(i => `${i.qtd}x ${i.n}`).join(', ');
-    const totalVal = parseFloat(document.getElementById('res-total').innerText.replace('R$ ', '').replace(',', '.'));
+            const itensTxt = Object.values(carrinho).map(i => `${i.qtd}x ${i.n}`).join(', ');
+            const totalVal = parseFloat(document.getElementById('res-total').innerText.replace('R$ ', '').replace(',', '.'));
 
-    try {
-        const { error } = await _supabase.from('pedidos').insert([{ 
-            cliente: nome, 
-            itens: itensTxt, 
-            total: totalVal, 
-            pagamento: modoPagamento,
-            tipo: modoEntrega,
-            endereco: modoEntrega === 'entrega' ? endereco : 'Retirada no Local'
-        }]);
+            try {
+                const { error } = await _supabase.from('pedidos').insert([{ 
+                    cliente: nome, 
+                    itens: itensTxt, 
+                    total: totalVal, 
+                    pagamento: modoPagamento,
+                    tipo: modoEntrega,
+                    endereco: modoEntrega === 'entrega' ? endereco : 'Retirada no Local'
+                }]);
 
-        if (error) throw error; 
+                const msg = `*NOVO PEDIDO*%0A*Cliente:* ${nome}%0A*Itens:* ${itensTxt}%0A*Pagamento:* ${modoPagamento}%0A*Total:* R$ ${totalVal.toFixed(2)}%0A*Tipo:* ${modoEntrega.toUpperCase()}`;
+                window.location.href = `https://wa.me/5549988821776?text=${msg}`;
 
-        const msg = `*NOVO PEDIDO*%0A*Cliente:* ${nome}%0A*Itens:* ${itensTxt}%0A*Pagamento:* ${modoPagamento}%0A*Total:* R$ ${totalVal.toFixed(2)}%0A*Tipo:* ${modoEntrega.toUpperCase()}`;
-        window.location.href = `https://wa.me/5549988821776?text=${msg}`;
+            } catch (err) {
+                alert("Erro ao enviar. Tente novamente.");
+            }
+        }
 
-    } catch (err) {
-        console.error("Erro:", err);
-        alert("Erro ao salvar no painel, mas você será redirecionado para o WhatsApp.");
-        const msg = `*PEDIDO*%0A*Cliente:* ${nome}%0A*Itens:* ${itensTxt}%0A*Total:* R$ ${totalVal.toFixed(2)}`;
-        window.location.href = `https://wa.me/5549988821776?text=${msg}`;
-    }
-}
-
-carregar(); 
+        carregar();
     </script>
 </body>
 </html>
